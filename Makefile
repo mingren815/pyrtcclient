@@ -2,7 +2,7 @@ BIN = mediainout
 all:$(BIN)
 
 
-mediainout:mediainout.cpp 
-	g++ -o $(BIN) mediainout.cpp  -std=gnu++11 -DLINUX -L./ -lrtc_avd_so -lpthread -I./
+mediainout:main.cpp 
+	g++ -o $(BIN) main.cpp  -std=gnu++11 -DLINUX -L./ -lrtc_avd_so -lpthread -I./
 clean:
 	rm -rf *.o $(BIN)
