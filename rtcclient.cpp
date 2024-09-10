@@ -4,7 +4,8 @@ static rtc::VideoCodec g_videocodec = rtc::codec_h264;
 static int g_sampelRate = 16000;
 static int g_channels = 1;
 static int g_sziePerSample = 2;
-RtcClient::RtcClient() : m_roomobj(0), m_audio(0), m_video(0), m_chat(0), m_isInitSuccess(false), m_cameraCap(1280, 720, 20)
+
+RtcClient::RtcClient() : m_roomobj(0), m_audio(0), m_video(0), m_chat(0), m_isInitSuccess(false), m_isJoind(false), m_cameraCap(1280, 720, 20), m_audioSubed(false)
 {
     m_callid = 0;
     m_fakeCamera.id = m_user.userId + "_virturevideoid";
@@ -171,7 +172,7 @@ int RtcClient::leave(int reason)
 }
 int RtcClient::sendPrivateMessage(int msgType, std::string message, std::string userid)
 {
-    //need to repacket msgType
+    // need to repacket msgType
     if (m_chat)
     {
         m_chat->sendPrivateMessage(message, userid);
@@ -179,7 +180,7 @@ int RtcClient::sendPrivateMessage(int msgType, std::string message, std::string 
 }
 int RtcClient::sendPublicMessage(int msgType, std::string message)
 {
-    //need to repacket msgType
+    // need to repacket msgType
     if (m_chat)
     {
         m_chat->sendPublicMessage(message);
@@ -201,7 +202,8 @@ int RtcClient::publishVedioStream(int w, int h, char *data, int len)
     {
         return -1;
     }
-    if (m_cameraCap.width != w || m_cameraCap.height != h){
+    if (m_cameraCap.width != w || m_cameraCap.height != h)
+    {
         m_cameraCap.width = w;
         m_cameraCap.height = h;
         m_video->updateCaptureCapability(m_fakeCamera.id, m_cameraCap);
