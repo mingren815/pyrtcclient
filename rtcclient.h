@@ -26,7 +26,7 @@ public:
     RtcClient();
     ~RtcClient();
 
-    int init(std::string url, std::string token) override;
+    int init(std::string url, std::string appkey, std::string secretkey) override;
     void uninit();
     int joinRoom(std::string roomid, std::string selfUserId, std::string selfUserName) override;
     int leave(int reason) override;
