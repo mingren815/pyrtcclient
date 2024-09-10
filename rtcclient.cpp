@@ -11,7 +11,7 @@ RtcClient::RtcClient() : m_roomobj(0), m_audio(0), m_video(0), m_chat(0)
 }
 RtcClient::~RtcClient() { uninit(); }
 
-int RtcClient::init(std::string url, std::string token)
+int RtcClient::init(std::string url, std::string appkey, std::string secretkey)
 {
 
     // token  需要转换成三体的token
@@ -28,8 +28,8 @@ int RtcClient::init(std::string url, std::string token)
     rtc::IAVDEngine::Instance()->setOption(eo_video_codec_priority, &g_videocodec);
     rtc::IAVDEngine::Instance()->setOption(eo_camera_capability_default, &g_cap);
     // 初始化
-    // result = rtc::IAVDEngine::Instance()->init(this, url, g_appkey, g_secretkey);
-    result = rtc::IAVDEngine::Instance()->init(this, url, tokenTee3);
+    result = rtc::IAVDEngine::Instance()->init(this, url, appkey, secretkey);
+    // result = rtc::IAVDEngine::Instance()->init(this, url, tokenTee3);
 
     if (result != AVD_OK)
     {
