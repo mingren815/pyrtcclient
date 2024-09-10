@@ -73,9 +73,9 @@ public:
 class AudioOutPipeOnly : public rtc::IAudioDataListener
 {
 public:
-    AudioOutPipeOnly(int bufferSize) : m_sampleRate(0), m_channels(0), m_count(0), m_audioBuffer(0)
+    AudioOutPipeOnly(int sampleRate, int channels) : m_sampleRate(sampleRate), m_channels(channels), m_count(0), m_audioBuffer(0)
     {
-        m_audioBuffer = new CircularBuffer(bufferSize);
+        m_audioBuffer = new CircularBuffer(m_sampleRate * m_channels * 2);
     }
     ~AudioOutPipeOnly()
     {

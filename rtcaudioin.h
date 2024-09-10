@@ -88,7 +88,7 @@ public:
     {
 
         std::lock_guard<std::mutex> gurad(m_mtx);
-        m_audioBuffer = new CircularBuffer(sampleRate * channels * 2);
+        m_audioBuffer = new CircularBuffer(m_sampleRate * m_channels * 2);
     }
     ~AudioInPipeOnly()
     {

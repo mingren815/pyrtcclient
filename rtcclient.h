@@ -74,6 +74,7 @@ private:
     rtc::User m_user;
     rtc::Camera m_fakeCamera;
     std::string m_audioSubUserId;
+    rtc::CameraCapability m_cameraCap;
     bool m_audioSubed;
     std::map<std::string, FakeEncodedFrameListener *> m_fakelistener;
     std::map<DeviceId, MyVideoRender *> m_rendermap;

@@ -1,11 +1,10 @@
 #include "rtcclient.h"
 
 static rtc::VideoCodec g_videocodec = rtc::codec_h264;
-static rtc::CameraCapability g_cap(1280, 720, 20);
 static int g_sampelRate = 16000;
 static int g_channels = 1;
 static int g_sziePerSample = 2;
-RtcClient::RtcClient() : m_roomobj(0), m_audio(0), m_video(0), m_chat(0), m_isInitSuccess(false)
+RtcClient::RtcClient() : m_roomobj(0), m_audio(0), m_video(0), m_chat(0), m_isInitSuccess(false), m_cameraCap(1280, 720, 20)
 {
     m_callid = 0;
     m_fakeCamera.id = m_user.userId + "_virturevideoid";
@@ -33,7 +32,7 @@ int RtcClient::init(std::string url, std::string token)
     rtc::IAVDEngine::Instance()->setLogParams("verbose realtstamp", "mclient.log");
 
     rtc::IAVDEngine::Instance()->setOption(eo_video_codec_priority, &g_videocodec);
-    rtc::IAVDEngine::Instance()->setOption(eo_camera_capability_default, &g_cap);
+    rtc::IAVDEngine::Instance()->setOption(eo_camera_capability_default, &m_cameraCap);
     // 初始化
     result = rtc::IAVDEngine::Instance()->init(this, url, tokenTee3);
 
@@ -63,7 +62,7 @@ int RtcClient::init(std::string url, std::string appkey, std::string secretkey)
     rtc::IAVDEngine::Instance()->setLogParams("verbose realtstamp", "mclient.log");
 
     rtc::IAVDEngine::Instance()->setOption(eo_video_codec_priority, &g_videocodec);
-    rtc::IAVDEngine::Instance()->setOption(eo_camera_capability_default, &g_cap);
+    rtc::IAVDEngine::Instance()->setOption(eo_camera_capability_default, &m_cameraCap);
     // 初始化
     result = rtc::IAVDEngine::Instance()->init(this, url, appkey, secretkey);
 
@@ -109,7 +108,9 @@ int RtcClient::joinRoom(std::string roomid, std::string userid, std::string user
 
         m_audioPipeIn = new AudioInPipeOnly(g_sampelRate, g_channels);
         GlobalDeviceManager::SetAudioInterface(m_audioPipeIn, NULL);
-        m_audioPipeOut = new AudioOutPipeOnly(g_sampelRate * g_sziePerSample);
+        m_audioPipeOut = new AudioOutPipeOnly(g_sampelRate, g_channels);
+        bool autoSubAudio = false;
+        m_roomobj->setOption(ro_audio_auto_subscribe, &autoSubAudio);
     }
     if (m_isInitSuccess)
     {
@@ -170,9 +171,19 @@ int RtcClient::leave(int reason)
 }
 int RtcClient::sendPrivateMessage(int msgType, std::string message, std::string userid)
 {
+    //need to repacket msgType
+    if (m_chat)
+    {
+        m_chat->sendPrivateMessage(message, userid);
+    }
 }
 int RtcClient::sendPublicMessage(int msgType, std::string message)
 {
+    //need to repacket msgType
+    if (m_chat)
+    {
+        m_chat->sendPublicMessage(message);
+    }
 }
 
 int RtcClient::publishAuditStream(char *data, int len)
@@ -189,6 +200,11 @@ int RtcClient::publishVedioStream(int w, int h, char *data, int len)
     if (!m_video || !m_videoPipeIn)
     {
         return -1;
+    }
+    if (m_cameraCap.width != w || m_cameraCap.height != h){
+        m_cameraCap.width = w;
+        m_cameraCap.height = h;
+        m_video->updateCaptureCapability(m_fakeCamera.id, m_cameraCap);
     }
     return m_videoPipeIn->inputCapturedFrame(w, h, (const uint8 *)data, len);
 }
@@ -290,14 +306,7 @@ void RtcClient::onUnpublishCameraNotify(const Camera &camera)
 {
     cout << "onUnpublishCameraNotify ,camera.id=" << camera.id << ",camera.name=" << camera.name << endl;
 }
-void RtcClient::onSubscribeResult(Result result, const DeviceId &fromId)
-{
-    cout << "onSubscribeResult ,result=" << result << ",fromId=" << fromId << endl;
-}
-void RtcClient::onUnsubscribeResult(Result result, const DeviceId &fromId)
-{
-    cout << "onUnsubscribeResult ,result=" << result << ",fromId=" << fromId << endl;
-}
+
 void RtcClient::onPublishLocalResult(Result result, const DeviceId &fromId)
 {
     cout << "onPublishLocalResult ,result=" << result << ",fromId=" << fromId << endl;

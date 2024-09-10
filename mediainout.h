@@ -41,7 +41,7 @@ std::string g_inputfile = "VideoInput.h264";
 
 uint32 callid = 0;
 rtc::VideoCodec g_videocodec = rtc::codec_h264;
-rtc::CameraCapability g_cap(1280, 720, 20);
+rtc::CameraCapability m_cameraCap(1280, 720, 20);
 
 void initdata(){
 
@@ -400,7 +400,7 @@ public:
         AudioOutProxy* out = new AudioOutProxy(48000, 2);
         GlobalDeviceManager::SetAudioInterface(in, out);
         rtc::IAVDEngine::Instance()->setOption(eo_video_codec_priority, &g_videocodec);
-        rtc::IAVDEngine::Instance()->setOption(eo_camera_capability_default, &g_cap);
+        rtc::IAVDEngine::Instance()->setOption(eo_camera_capability_default, &m_cameraCap);
         //初始化
         result = rtc::IAVDEngine::Instance()->init(this, g_url, g_appkey, g_secretkey);    
         
