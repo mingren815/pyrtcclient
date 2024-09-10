@@ -70,14 +70,43 @@ public:
     FILE *m_fd;
 };
 
-class AudioOutPipeOnly : public rtc::IAudioDataListener
+class AudioDeviceOutDumy : public rtc::AudioOutInterface
 {
 public:
-    AudioOutPipeOnly(int sampleRate, int channels) : m_sampleRate(sampleRate), m_channels(channels), m_count(0), m_audioBuffer(0)
+    AudioDeviceOutDumy(int sampleRate, int channels)
+        : m_sampleRate(sampleRate), m_channels(channels), m_count(0)
+    {
+    }
+    ~AudioDeviceOutDumy()
+    {
+    }
+    bool onInit(int &sampleRate, int &channels, int &processIntervalMS) override
+    {
+        sampleRate = m_sampleRate;
+        channels = m_channels;
+        processIntervalMS = g_outProcessIntervalMS;
+        return true;
+    }
+    void onWriteData(int sampleRate,
+                     int channels,
+                     const int8 *data,
+                     unsigned int len) override
+    {
+    }
+
+    int m_sampleRate;
+    int m_channels;
+    int m_count;
+};
+
+class AudioPcmOut : public rtc::IAudioDataListener
+{
+public:
+    AudioPcmOut(int sampleRate, int channels) : m_sampleRate(sampleRate), m_channels(channels), m_count(0), m_audioBuffer(0)
     {
         m_audioBuffer = new CircularBuffer(m_sampleRate * m_channels * 2);
     }
-    ~AudioOutPipeOnly()
+    ~AudioPcmOut()
     {
         {
             std::lock_guard<std::mutex> gurad(m_mtx);

@@ -80,17 +80,17 @@ public:
     char *m_audiobuf;
 };
 
-class AudioInPipeOnly : public rtc::AudioInInterface
+class AudioDeviceInDumy : public rtc::AudioInInterface
 {
 public:
-    AudioInPipeOnly(int sampleRate, int channels)
+    AudioDeviceInDumy(int sampleRate, int channels)
         : m_sampleRate(sampleRate), m_channels(channels), m_count(0), m_audioBuffer(NULL)
     {
 
         std::lock_guard<std::mutex> gurad(m_mtx);
         m_audioBuffer = new CircularBuffer(m_sampleRate * m_channels * 2);
     }
-    ~AudioInPipeOnly()
+    ~AudioDeviceInDumy()
     {
         {
             std::lock_guard<std::mutex> gurad(m_mtx);

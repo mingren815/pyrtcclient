@@ -80,19 +80,18 @@ int main(int argc, char *argv[])
     printf("--roomid:%s,--audio;%s,--video:%s\n", g_roomid.c_str(), g_audioOprate.c_str(), g_videoOprate.c_str());
     RtcClient mcc;
     int res = 0;
-    res = mcc.init(g_url, "");
+    res = mcc.init(g_url, g_appkey, g_secretkey);
     printf("============================================================res:%d...\n",res);
     if (res < 0)
         return -1;
 
     char quit;
-    //sleep(3);
-    //if (g_roomid.empty()){
-    //    mcc.CreatRoom();
-    //}
-    //else{
-    //    mcc.JoinRoom(g_roomid);
-    //}
+    if (g_roomid.empty()){
+       mcc.CreatRoom();
+    }
+    else{
+       mcc.joinRoom(g_roomid, "AITestUserId","AITestUserName");
+    }
     while (true){
         cin>>quit;
         printf("============================================================step2...\n");

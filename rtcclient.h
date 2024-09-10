@@ -35,7 +35,7 @@ public:
     int subAudioStream(const std::string &targetUserId) override;
     int getAudioStream(const std::string &targetUserId, char *data, int dataSize) override;
 
-private:
+public:
     int getState();
     int CreatRoom();
 
@@ -56,14 +56,17 @@ private:
     virtual void onSubscribeMicrophoneResult(Result result, const UserId &fromId);
     virtual void onUnsubscribeMicrophoneResult(Result result, const UserId &fromId);
 
+    // create room callback ,only for test 
+    virtual void onScheduleRoomResult(uint32 callId, Result result, const rtc::RoomId &roomId);
 public:
     rtc::IRoom *m_roomobj;
     rtc::IMAudio *m_audio;
     rtc::IMVideo *m_video;
     rtc::IMChat *m_chat;
     YUV420CapturePipe *m_videoPipeIn;
-    AudioInPipeOnly *m_audioPipeIn;
-    AudioOutPipeOnly *m_audioPipeOut;
+    AudioDeviceInDumy *m_audioDeviceIn;
+    AudioDeviceOutDumy *m_audioDeviceOut;
+    AudioPcmOut *m_audioPcmOut;
 
 private:
     bool m_isInitSuccess;
@@ -76,4 +79,5 @@ private:
     std::string m_audioSubUserId;
     rtc::CameraCapability m_cameraCap;
     bool m_audioSubed;
+    bool m_createRoomForTest;
 };

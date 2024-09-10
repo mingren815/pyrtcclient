@@ -5,11 +5,10 @@ static int g_sampelRate = 16000;
 static int g_channels = 1;
 static int g_sziePerSample = 2;
 
-RtcClient::RtcClient() : m_roomobj(0), m_audio(0), m_video(0), m_chat(0), m_isInitSuccess(false), m_isJoind(false), m_cameraCap(1280, 720, 20), m_audioSubed(false)
+RtcClient::RtcClient()
+    : m_roomobj(0), m_audio(0), m_video(0), m_chat(0), m_isInitSuccess(false), m_isJoind(false), m_cameraCap(1280, 720, 20), m_audioSubed(false), m_createRoomForTest(false)
 {
     m_callid = 0;
-    m_fakeCamera.id = m_user.userId + "_virturevideoid";
-    m_fakeCamera.name = "fakevideoin";
     rtc::IAVDEngine::Instance();
 }
 RtcClient::~RtcClient()
@@ -28,9 +27,10 @@ int RtcClient::init(std::string url, std::string token)
     //
     cout << "AVDEngine start" << endl;
     int result = 0;
-    rtc::IAVDEngine::Instance()->uninit();
     // 设置日志文件
     rtc::IAVDEngine::Instance()->setLogParams("verbose realtstamp", "mclient.log");
+    // device must set before rtc::IAVDEngine::Instance()->init
+    GlobalDeviceManager::SetAudioInterface(0, 0);
 
     rtc::IAVDEngine::Instance()->setOption(eo_video_codec_priority, &g_videocodec);
     rtc::IAVDEngine::Instance()->setOption(eo_camera_capability_default, &m_cameraCap);
@@ -58,9 +58,10 @@ int RtcClient::init(std::string url, std::string appkey, std::string secretkey)
     //
     cout << "AVDEngine start" << endl;
     int result = 0;
-    rtc::IAVDEngine::Instance()->uninit();
     // 设置日志文件
     rtc::IAVDEngine::Instance()->setLogParams("verbose realtstamp", "mclient.log");
+    // device must set before rtc::IAVDEngine::Instance()->init
+    GlobalDeviceManager::SetAudioInterface(0, 0);
 
     rtc::IAVDEngine::Instance()->setOption(eo_video_codec_priority, &g_videocodec);
     rtc::IAVDEngine::Instance()->setOption(eo_camera_capability_default, &m_cameraCap);
@@ -92,10 +93,14 @@ int RtcClient::joinRoom(std::string roomid, std::string userid, std::string user
 {
     int ret = 0;
     cout << "join room ,roomid=" << roomid;
+    cout << "join room ,userId=" << userid;
+    cout << "join room ,username=" << username;
     m_isJoind = true;
     m_user.userId = userid;
     m_user.userName = username;
     m_roomid = roomid;
+    m_fakeCamera.id = userid + "_virturevideoid";
+    m_fakeCamera.name = "fakevideoin";
     if (!m_roomobj)
     {
         m_roomobj = rtc::IRoom::obtain(m_roomid);
@@ -107,9 +112,10 @@ int RtcClient::joinRoom(std::string roomid, std::string userid, std::string user
         m_chat = IMChat::getChat(m_roomobj);
         m_chat->setListener(this);
 
-        m_audioPipeIn = new AudioInPipeOnly(g_sampelRate, g_channels);
-        GlobalDeviceManager::SetAudioInterface(m_audioPipeIn, NULL);
-        m_audioPipeOut = new AudioOutPipeOnly(g_sampelRate, g_channels);
+        m_audioDeviceIn = new AudioDeviceInDumy(g_sampelRate, g_channels);
+        m_audioDeviceOut = new AudioDeviceOutDumy(g_sampelRate, g_channels);
+        GlobalDeviceManager::SetAudioInterface(m_audioDeviceIn, m_audioDeviceOut);
+        m_audioPcmOut = new AudioPcmOut(g_sampelRate, g_channels);
         bool autoSubAudio = false;
         m_roomobj->setOption(ro_audio_auto_subscribe, &autoSubAudio);
     }
@@ -133,16 +139,6 @@ int RtcClient::leave(int reason)
         }
         m_audio->setListener(NULL);
         m_audio = NULL;
-        if (m_audioPipeIn)
-        {
-            delete m_audioPipeIn;
-            m_audioPipeIn = NULL;
-        }
-        if (m_audioPipeOut)
-        {
-            delete m_audioPipeOut;
-            m_audioPipeOut = NULL;
-        }
     }
     if (m_video)
     {
@@ -168,6 +164,21 @@ int RtcClient::leave(int reason)
         m_roomobj->release();
         m_roomobj = NULL;
     }
+    if (m_audioDeviceIn)
+    {
+        delete m_audioDeviceIn;
+        m_audioDeviceIn = NULL;
+    }
+    if (m_audioDeviceOut)
+    {
+        delete m_audioDeviceOut;
+        m_audioDeviceOut = NULL;
+    }
+    if (m_audioPcmOut)
+    {
+        delete m_audioPcmOut;
+        m_audioPcmOut = NULL;
+    }
     return ret;
 }
 int RtcClient::sendPrivateMessage(int msgType, std::string message, std::string userid)
@@ -189,11 +200,11 @@ int RtcClient::sendPublicMessage(int msgType, std::string message)
 
 int RtcClient::publishAuditStream(char *data, int len)
 {
-    if (!m_audio || !m_audioPipeIn)
+    if (!m_audio || !m_audioDeviceIn)
     {
         return -1;
     }
-    m_audioPipeIn->inputAudioSample(data, len);
+    m_audioDeviceIn->inputAudioSample(data, len);
     return 0;
 }
 int RtcClient::publishVedioStream(int w, int h, char *data, int len)
@@ -228,30 +239,37 @@ int RtcClient::subAudioStream(const std::string &targetUserId)
 }
 int RtcClient::getAudioStream(const std::string &targetUserId, char *data, int dataSize)
 {
-    if (!m_audio || !m_audioPipeOut)
+    if (!m_audio || !m_audioPcmOut)
     {
         return 0;
     }
-    return m_audioPipeOut->getAudioData(targetUserId, data, dataSize);
+    return m_audioPcmOut->getAudioData(targetUserId, data, dataSize);
 }
 int RtcClient::CreatRoom()
 {
-    int res = -1;
-    cout << "this is CreatRoom!!" << endl;
-    rtc::RoomInfo rominfo;
-    rominfo.roomName = "Room_Demo";
-    rominfo.appRoomId = "";
-    rominfo.hostPassword = "";
-    rominfo.duration = 3600;
-    rominfo.maxAttendee = 5;
-    rominfo.maxAudio = 3;
-    rominfo.maxVideo = 2;
-    rominfo.setRoomMode(rtc::rm_mcu);
-    rominfo.roomTopic = "123";
-    // 安排房间
-    res = rtc::IAVDEngine::Instance()->scheduleRoom(m_callid, rominfo);
-    cout << "res: " << res << endl;
-    return res;
+    if (m_isInitSuccess)
+    {
+        int res = -1;
+        cout << "this is CreatRoom!!" << endl;
+        rtc::RoomInfo rominfo;
+        rominfo.roomName = "Room_Demo";
+        rominfo.appRoomId = "";
+        rominfo.hostPassword = "";
+        rominfo.duration = 3600;
+        rominfo.maxAttendee = 5;
+        rominfo.maxAudio = 3;
+        rominfo.maxVideo = 2;
+        rominfo.setRoomMode(rtc::rm_mcu);
+        rominfo.roomTopic = "123";
+        // 安排房间
+        res = rtc::IAVDEngine::Instance()->scheduleRoom(m_callid, rominfo);
+        cout << "res: " << res << endl;
+        return res;
+    }
+    else
+    {
+        m_createRoomForTest = true;
+    }
 }
 void RtcClient::onInitResult(Result result)
 {
@@ -264,6 +282,10 @@ void RtcClient::onInitResult(Result result)
     if (m_isInitSuccess && !m_roomid.empty() && m_roomobj)
     {
         m_roomobj->join(m_user, "", 0);
+    }
+    if (m_isInitSuccess && m_createRoomForTest)
+    {
+        CreatRoom();
     }
 }
 
@@ -278,6 +300,7 @@ void RtcClient::onJoinResult(Result result)
         cout << "Joinf success ,roomid=" << m_roomid << endl;
         if (m_audio)
         {
+            std::cout << "openMicrophone" << endl;
             m_audio->openMicrophone();
         }
         // 导入和导出视
@@ -349,11 +372,33 @@ void RtcClient::onSubscribeMicrophoneResult(Result result, const UserId &fromId)
     {
         return;
     }
-    if (AVD_OK == result && fromId == m_audioSubUserId && m_audioPipeOut)
+    if (AVD_OK == result && fromId == m_audioSubUserId && m_audioPcmOut)
     {
-        m_audio->registerPCMDataListener(m_audioSubUserId, m_audioPipeOut, m_audioPipeOut->sampleRate(), m_audioPipeOut->channels());
+        m_audio->registerPCMDataListener(m_audioSubUserId, m_audioPcmOut, m_audioPcmOut->sampleRate(), m_audioPcmOut->channels());
     }
 }
 void RtcClient::onUnsubscribeMicrophoneResult(Result result, const UserId &fromId)
 {
+}
+
+void RtcClient::onScheduleRoomResult(uint32 callId, Result result, const rtc::RoomId &roomId)
+{
+    if (AVD_OK == result)
+    {
+        cout << "Room application successful!!" << endl;
+        cout << "callid = " << callId << endl;
+        cout << "result = " << result << endl;
+        cout << "roomID = " << roomId << endl;
+        std::string userId = "AITestUserId";
+        std::string userName = "AITestUserName";
+        joinRoom(roomId, userId, userName);
+    }
+    else
+    {
+        cout << "Room application Failed!!" << endl;
+        cout << "callid = " << callId << endl;
+        cout << "result = " << result << endl;
+        cout << "roomID = " << roomId << endl;
+        cout << "Test end!!" << endl;
+    }
 }
