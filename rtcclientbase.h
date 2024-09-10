@@ -14,6 +14,7 @@
 #include "api/avdengine.h"
 #include "api/maudio.h"
 #include "api/mvideo.h"
+#include "api/mchat.h"
 #include "api/musermanager.h"
 #include "api/videocapture.h"
 #include "api/devicemanager.h"
@@ -30,7 +31,7 @@ using namespace rtc;
 /****************************叁体引擎rtc*********************************************/
 /***************************************************************************************/
 
-class RtcClientBase : public rtc::IAVDEngine::IListener, public rtc::IRoom::IListener, public rtc::IMAudio::IListener, public rtc::IMVideo::IListener
+class RtcClientBase : public rtc::IAVDEngine::IListener, public rtc::IRoom::IListener, public rtc::IMAudio::IListener, public rtc::IMVideo::IListener, public rtc::IMChat::IListener
 {
 public:
     RtcClientBase() {}
@@ -115,4 +116,9 @@ public:
     {
         cout << "onUnpublishLocalResult ,result=" << result << ",DeviceId=" << fromId << endl;
     }
+
+    //mchat 模块消息回调
+    virtual void onPublicMessage(const AvdMessage &message) {};
+
+    virtual void onPrivateMessage(const AvdMessage &message) {};
 };

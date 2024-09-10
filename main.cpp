@@ -31,7 +31,13 @@ void printfhelp(){
     printf("--inputfile,default is VideoInput.h264 in the current directory ");
 }
 /**************************************************************************************/
+static rtc::String _url = "https://v.nice2meet.cn";
+static rtc::String _appkey = "demo_access";
+static rtc::String _secretkey = "demo_secret";
 
+static std::string g_url = _url;
+static std::string g_appkey = _appkey;
+static std::string g_secretkey = _secretkey;
 
 int main(int argc, char *argv[])
 {
@@ -69,7 +75,7 @@ int main(int argc, char *argv[])
     printf("--roomid:%s,--audio;%s,--video:%s\n", g_roomid.c_str(), g_audioOprate.c_str(), g_videoOprate.c_str());
     RtcClient mcc;
     int res = 0;
-    res = mcc.InitEngine();
+    res = mcc.init(g_url, "");
     printf("============================================================res:%d...\n",res);
     if (res < 0)
         return -1;
@@ -91,8 +97,8 @@ int main(int argc, char *argv[])
         }
     }
     printf("end program\n");
-    mcc.CloseRoom();
-    mcc.UninitEngine();
+    mcc.leave(0);
+    mcc.uninit();
     return 0;
 }
 

@@ -1,13 +1,7 @@
 #pragma once
+#include "rtcinterface.h"
 #include "rtcclientbase.h"
 
-static rtc::String _url = "https://v.nice2meet.cn";
-static rtc::String _appkey = "demo_access";
-static rtc::String _secretkey = "demo_secret";
-
-static std::string g_url = _url;
-static std::string g_appkey = _appkey;
-static std::string g_secretkey = _secretkey;
 static std::string g_audioOprate = "2";
 static std::string g_videoOprate = "2";
 static std::string g_roomid;
@@ -17,16 +11,37 @@ static std::string g_inputfile = "VideoInput.h264";
 static rtc::VideoCodec g_videocodec = rtc::codec_h264;
 static rtc::CameraCapability g_cap(1280, 720, 20);
 
-class RtcClient : public RtcClientBase
+class RtcClient : public RtcClientInterface, public RtcClientBase
 {
 public:
+    enum State
+    {
+         initing = 0,
+         initsuccess = 1,
+         joining = 2,
+         joinsuccess = 3,
+         initfailed = 4,
+         joinfailed = 5,
+    };
     RtcClient();
     ~RtcClient();
-    int InitEngine();
-    void UninitEngine();
-    void CloseRoom();
+
+    int init(std::string url, std::string token) override;
+    void uninit();
+    int joinRoom(std::string roomid, std::string selfUserId, std::string selfUserName) override;
+    int leave(int reason) override;
+    int sendPrivateMessage(int msgType, std::string message, std::string targetUserId) override;
+    int sendPublicMessage(int msgType, std::string message) override;
+
+    int publishAuditStream(char *data, int len) override;
+    int publishVedioStream(char *data, int len) override;
+
+    int subAudioStream(const std::string &targetUserId) override;
+    int getAudioStream(const std::string &targetUserId, char *data, int dataSize) override;
+private:
+    int getState();
     int CreatRoom();
-    int JoinRoom(rtc::String roomID);
+
 private:
     virtual void onInitResult(Result result);
     virtual void onScheduleRoomResult(uint32 callId, Result result, const rtc::RoomId &roomId);
@@ -38,14 +53,19 @@ private:
     virtual void onUnsubscribeResult(Result result, const DeviceId &fromId);
     virtual void onPublishLocalResult(Result result, const DeviceId &fromId);
     virtual void onUnpublishLocalResult(Result result, const DeviceId &fromId);
+    // 聊天消息回调
+    virtual void onPublicMessage(const AvdMessage &message);
+    virtual void onPrivateMessage(const AvdMessage &message);
 
 public:
     rtc::IRoom *m_roomobj;
     rtc::IMAudio *m_audio;
     rtc::IMVideo *m_video;
+    rtc::IMChat *m_chat;
     EncodedCaptureFromFile *m_pipe;
 
 private:
+    bool m_isInitSuccess;
     std::string m_roomid;
     std::string m_userName;
     uint32 m_callid;

@@ -1,6 +1,6 @@
 #include "rtcclient.h"
 
-RtcClient::RtcClient() : m_roomobj(0), m_audio(0), m_video(0)
+RtcClient::RtcClient() : m_roomobj(0), m_audio(0), m_video(0), m_chat(0)
 {
     m_callid = 0;
     m_user.userId = "1498201";
@@ -9,10 +9,14 @@ RtcClient::RtcClient() : m_roomobj(0), m_audio(0), m_video(0)
     m_fakeCamera.name = "ahahasdkfja";
     rtc::IAVDEngine::Instance();
 }
-RtcClient::~RtcClient() { UninitEngine(); }
+RtcClient::~RtcClient() { uninit(); }
 
-int RtcClient::InitEngine()
+int RtcClient::init(std::string url, std::string token)
 {
+
+    // token  需要转换成三体的token
+    std::string tokenTee3;
+    //
     cout << "AVDEngine start" << endl;
     int result = 0;
     rtc::IAVDEngine::Instance()->uninit();
@@ -24,13 +28,14 @@ int RtcClient::InitEngine()
     rtc::IAVDEngine::Instance()->setOption(eo_video_codec_priority, &g_videocodec);
     rtc::IAVDEngine::Instance()->setOption(eo_camera_capability_default, &g_cap);
     // 初始化
-    result = rtc::IAVDEngine::Instance()->init(this, g_url, g_appkey, g_secretkey);
+    // result = rtc::IAVDEngine::Instance()->init(this, url, g_appkey, g_secretkey);
+    result = rtc::IAVDEngine::Instance()->init(this, url, tokenTee3);
 
     if (result != AVD_OK)
     {
         cout << "AVDEngine registration failed!" << endl;
-        cout << "appkey: " << _appkey << endl;
-        cout << "secretkey: " << _secretkey << endl;
+        cout << "url: " << url << endl;
+        cout << "token: " << token << endl;
         return -1;
     }
     else
@@ -38,14 +43,41 @@ int RtcClient::InitEngine()
         cout << "AVDEngine initialization successful !!" << endl;
     }
     cout << "AVDEngine  end!" << endl;
-    return 1;
+    return result;
 }
-void RtcClient::UninitEngine()
+void RtcClient::uninit()
 {
     rtc::IAVDEngine::Instance()->release();
 }
-void RtcClient::CloseRoom()
+
+int RtcClient::joinRoom(std::string roomid, std::string userid, std::string username)
 {
+    int ret = 0;
+    cout << "join room ,roomid=" << roomid;
+    m_user.userId = userid;
+    m_user.userName = username;
+    m_roomid = roomid;
+    if (!m_roomobj)
+    {
+        m_roomobj = rtc::IRoom::obtain(m_roomid);
+        m_roomobj->setListener(this);
+        m_audio = IMAudio::getAudio(m_roomobj);
+        m_audio->setListener(this);
+        m_video = IMVideo::getVideo(m_roomobj);
+        m_video->setListener(this);
+        m_chat = IMChat::getChat(m_roomobj);
+        m_chat->setListener(this);
+    }
+    if (m_isInitSuccess)
+    {
+        ret = m_roomobj->join(m_user, "", 0);
+    }
+    cout << "END join room ,roomid=" << roomid;
+    return ret;
+}
+int RtcClient::leave(int reason)
+{
+    int ret = 0;
     if (m_audio)
     {
         m_audio->closeMicrophone();
@@ -63,11 +95,23 @@ void RtcClient::CloseRoom()
     }
     if (m_roomobj)
     {
-        m_roomobj->leave(0);
+        ret = m_roomobj->leave(reason);
         m_roomobj->close();
     }
+    return ret;
+}
+int RtcClient::sendPrivateMessage(int msgType, std::string message, std::string userid)
+{
+}
+int RtcClient::sendPublicMessage(int msgType, std::string message)
+{
 }
 
+int RtcClient::publishAuditStream(char *data, int len) {}
+int RtcClient::publishVedioStream(char *data, int len) {}
+
+int RtcClient::subAudioStream(const std::string &targetUserId) {}
+int RtcClient::getAudioStream(const std::string &targetUserId, char *data, int dataSize) {}
 int RtcClient::CreatRoom()
 {
     int res = -1;
@@ -87,43 +131,17 @@ int RtcClient::CreatRoom()
     cout << "res: " << res << endl;
     return res;
 }
-
-int RtcClient::JoinRoom(rtc::String roomID)
-{
-    int ret = -1;
-    cout << "join room ,roomid=" << roomID;
-    if (!m_roomobj)
-    {
-        m_user.userId = "1498201";
-        m_user.userName = "kangfeng";
-        m_roomid = roomID;
-        m_roomobj = rtc::IRoom::obtain(m_roomid);
-        m_roomobj->setListener(this);
-        m_audio = IMAudio::getAudio(m_roomobj);
-        m_audio->setListener(this);
-        m_video = IMVideo::getVideo(m_roomobj);
-        m_video->setListener(this);
-        ret = m_roomobj->join(m_user, "", 0);
-    }
-    cout << "END join room ,roomid=" << roomID;
-    return ret;
-}
-
 void RtcClient::onInitResult(Result result)
 {
     cout << "result = " << result << endl;
     cout << "This is the callback after InitEngine is initialized !!!" << endl;
     if (result == AVD_OK)
     {
-        cout << "g_roomid = " << g_roomid << endl;
-        if (g_roomid.empty())
-        {
-            CreatRoom();
-        }
-        else
-        {
-            JoinRoom(g_roomid);
-        }
+        m_isInitSuccess = true;
+    }
+    if (m_isInitSuccess && !m_roomid.empty() && m_roomobj)
+    {
+        m_roomobj->join(m_user, "", 0);
     }
 }
 void RtcClient::onScheduleRoomResult(uint32 callId, Result result, const rtc::RoomId &roomId)
@@ -292,4 +310,11 @@ void RtcClient::onPublishLocalResult(Result result, const DeviceId &fromId)
 void RtcClient::onUnpublishLocalResult(Result result, const DeviceId &fromId)
 {
     cout << "onUnpublishLocalResult ,result=" << result << ",DeviceId=" << fromId << endl;
+}
+
+void RtcClient::onPublicMessage(const AvdMessage &message)
+{
+}
+void RtcClient::onPrivateMessage(const AvdMessage &message)
+{
 }
