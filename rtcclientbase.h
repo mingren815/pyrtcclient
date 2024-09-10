@@ -20,10 +20,6 @@
 #include "api/devicemanager.h"
 #include "api/videorender.h"
 
-#include "rtcyuvin.h"
-#include "rtcyuvout.h"
-#include "rtcaudioin.h"
-
 using namespace std;
 using namespace rtc;
 
@@ -36,8 +32,7 @@ class RtcClientBase
       public rtc::IRoom::IListener,
       public rtc::IMAudio::IListener,
       public rtc::IMVideo::IListener,
-      public rtc::IMChat::IListener,
-      public rtc::IAudioDataListener
+      public rtc::IMChat::IListener
 {
 public:
     RtcClientBase() {}
@@ -82,8 +77,9 @@ public:
     {
         cout << "onCloseMicrophoneResult ,result=" << result << endl;
     }
-    // virtual void onSubscribeResult(Result result, const rtc::UserId& fromId){}
-    // virtual void onUnsubscribeResult(Result result, const rtc::UserId& fromId){}
+    virtual void onSubscribeMicrophoneResult(Result result, const UserId &fromId) {}
+
+    virtual void onUnsubscribeMicrophoneResult(Result result, const UserId &fromId) {}
 
     //////video listerner
     virtual void onCameraStatusNotify(CameraStatus status, const DeviceId &fromId)

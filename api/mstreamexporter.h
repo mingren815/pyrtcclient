@@ -1,4 +1,4 @@
-#ifndef AVD_Module_Exporter_H__
+﻿#ifndef AVD_Module_Exporter_H__
 #define AVD_Module_Exporter_H__
 
 #include "common.h"

@@ -1,31 +1,27 @@
 #pragma once
 #include "rtcinterface.h"
 #include "rtcclientbase.h"
-
-static std::string g_audioOprate = "2";
-static std::string g_videoOprate = "2";
-static std::string g_roomid;
-static std::string g_decodeable = "2";
-static std::string g_inputfile = "VideoInput.h264";
-
-static rtc::VideoCodec g_videocodec = rtc::codec_h264;
-static rtc::CameraCapability g_cap(1280, 720, 20);
+#include "rtcyuvin.h"
+#include "rtcyuvout.h"
+#include "rtcaudioin.h"
+#include "rtcaudioout.h"
 
 class RtcClient : public RtcClientInterface, public RtcClientBase
 {
 public:
     enum RoomState
     {
-         initing = 0,
-         initsuccess = 1,
-         joining = 2,
-         joinsuccess = 3,
-         initfailed = 4,
-         joinfailed = 5,
+        initing = 0,
+        initsuccess = 1,
+        joining = 2,
+        joinsuccess = 3,
+        initfailed = 4,
+        joinfailed = 5,
     };
     RtcClient();
     ~RtcClient();
 
+    int init(std::string url, std::string token) override;
     int init(std::string url, std::string appkey, std::string secretkey) override;
     void uninit();
     int joinRoom(std::string roomid, std::string selfUserId, std::string selfUserName) override;
@@ -38,6 +34,7 @@ public:
 
     int subAudioStream(const std::string &targetUserId) override;
     int getAudioStream(const std::string &targetUserId, char *data, int dataSize) override;
+
 private:
     int getState();
     int CreatRoom();
@@ -48,15 +45,16 @@ private:
     virtual void onConnectionStatus(rtc::ConnectionStatus status);
     virtual void onPublishCameraNotify(const Camera &camera);
     virtual void onUnpublishCameraNotify(const Camera &camera);
-    virtual void onSubscribeResult(Result result, const DeviceId &fromId);
-    virtual void onUnsubscribeResult(Result result, const DeviceId &fromId);
     virtual void onPublishLocalResult(Result result, const DeviceId &fromId);
     virtual void onUnpublishLocalResult(Result result, const DeviceId &fromId);
-    // 聊天消息回调
+    // chat message callbak
     virtual void onPublicMessage(const AvdMessage &message);
     virtual void onPrivateMessage(const AvdMessage &message);
 
-    virtual void onAudioData(const UserId &userId, uint64 timestamp, uint32 sampleRate, uint32 channels, const void *data, uint32 len);
+    // audio callback
+    virtual void onMicrophoneStatusNotify(rtc::MicrophoneStatus status, const rtc::UserId &fromUserId);
+    virtual void onSubscribeMicrophoneResult(Result result, const UserId &fromId);
+    virtual void onUnsubscribeMicrophoneResult(Result result, const UserId &fromId);
 
 public:
     rtc::IRoom *m_roomobj;
@@ -65,14 +63,18 @@ public:
     rtc::IMChat *m_chat;
     YUV420CapturePipe *m_videoPipeIn;
     AudioInPipeOnly *m_audioPipeIn;
+    AudioOutPipeOnly *m_audioPipeOut;
 
 private:
     bool m_isInitSuccess;
+    bool m_isJoind;
     std::string m_roomid;
     std::string m_userName;
     uint32 m_callid;
     rtc::User m_user;
     rtc::Camera m_fakeCamera;
+    std::string m_audioSubUserId;
+    bool m_audioSubed;
     std::map<std::string, FakeEncodedFrameListener *> m_fakelistener;
     std::map<DeviceId, MyVideoRender *> m_rendermap;
 };

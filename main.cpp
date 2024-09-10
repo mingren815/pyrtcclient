@@ -38,6 +38,11 @@ static rtc::String _secretkey = "demo_secret";
 static std::string g_url = _url;
 static std::string g_appkey = _appkey;
 static std::string g_secretkey = _secretkey;
+static std::string g_audioOprate = "2";
+static std::string g_videoOprate = "2";
+static std::string g_roomid;
+static std::string g_decodeable = "2";
+static std::string g_inputfile = "VideoInput.h264";
 
 int main(int argc, char *argv[])
 {

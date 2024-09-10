@@ -263,7 +263,7 @@ namespace rtc {
 				*
 				* @sa subscribe
 				*/
-				virtual void onSubscribeResult(Result result, const UserId& fromId){}
+				virtual void onSubscribeMicrophoneResult(Result result, const UserId& fromId){}
 				/** 本用户取消订阅音频异步返回
 				*
 				* @param[in] result 错误代码。
@@ -271,7 +271,7 @@ namespace rtc {
 				*
 				* @sa unsubscribe
 				*/
-				virtual void onUnsubscribeResult(Result result, const UserId& fromId){}
+				virtual void onUnsubscribeMicrophoneResult(Result result, const UserId& fromId){}
 
 				/** 媒体播放状态通知
 				*

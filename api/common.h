@@ -7,14 +7,14 @@
 #include <sstream>
 
 NAMESPACE_RTC_BEGIN
-typedef std::string String;					/**< tee3定义的String类型 */
-typedef String		RoomId;					/**< 房间号类型，唯一标识房间内一个房间，长度不大于Max_RoomId定义；定义如下：[RId_P|T_H|F_P|M_type_guid]；各分段的含义为： */
+typedef std::string String;					/**< 定义的String类型 */
+typedef String		RoomId;					/**< 房间号类型，唯一标识房间内一个房间，长度不大于Max_RoomId定义；*/
 typedef String		DeviceId;				/**< 设备号类型，唯一标识房间内一个设备，长度不大于Max_DeviceId定义；定义如下：userId+"_"+md5[os.getdeviceid() or os.getsystemid()] */
 typedef String		UserId;					/**< 用户号类型，唯一标识房间内一个用户，长度不大于Max_UserId定义；由应用层定义传递给AVD SDK，要求保证房间内唯一  */
 typedef String		StreamId;				/**< 媒体流Id类型，SDK内部使用 */
 typedef DeviceId	RecordId;				/**< 录制ID类型  */
 typedef DeviceId	LiveId;					/**< 直播频道ID类型  */
-typedef DeviceId	AnnotationId;			/**< 直播频道ID类型  */
+typedef DeviceId	AnnotationId;			/**< 注释对象ID类型  */
 typedef String      BoardId;                ////保证id唯一即可,一般使用uuid
 ///
 extern RT_API_EXPORT const UserId	AVD_userId_allUser;			/**< AVD定义的虚假用户Id，用于标识房间中所有用户  */

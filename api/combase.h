@@ -1,4 +1,4 @@
-#ifndef RTC_COMMON_BASE_H
+﻿#ifndef RTC_COMMON_BASE_H
 #define RTC_COMMON_BASE_H
 #define __BUILD_LIVECAST__
 

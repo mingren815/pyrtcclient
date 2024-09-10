@@ -1,5 +1,10 @@
 #include "rtcclient.h"
 
+static rtc::VideoCodec g_videocodec = rtc::codec_h264;
+static rtc::CameraCapability g_cap(1280, 720, 20);
+static int g_sampelRate = 16000;
+static int g_channels = 1;
+static int g_sziePerSample = 2;
 RtcClient::RtcClient() : m_roomobj(0), m_audio(0), m_video(0), m_chat(0), m_isInitSuccess(false)
 {
     m_callid = 0;
@@ -7,11 +12,17 @@ RtcClient::RtcClient() : m_roomobj(0), m_audio(0), m_video(0), m_chat(0), m_isIn
     m_fakeCamera.name = "fakevideoin";
     rtc::IAVDEngine::Instance();
 }
-RtcClient::~RtcClient() { uninit(); }
-
-int RtcClient::init(std::string url, std::string appkey, std::string secretkey)
+RtcClient::~RtcClient()
 {
+    if (m_isJoind)
+    {
+        leave(0);
+    }
+    uninit();
+}
 
+int RtcClient::init(std::string url, std::string token)
+{
     // token  需要转换成三体的token
     std::string tokenTee3;
     //
@@ -24,14 +35,44 @@ int RtcClient::init(std::string url, std::string appkey, std::string secretkey)
     rtc::IAVDEngine::Instance()->setOption(eo_video_codec_priority, &g_videocodec);
     rtc::IAVDEngine::Instance()->setOption(eo_camera_capability_default, &g_cap);
     // 初始化
-    result = rtc::IAVDEngine::Instance()->init(this, url, appkey, secretkey);
-    // result = rtc::IAVDEngine::Instance()->init(this, url, tokenTee3);
+    result = rtc::IAVDEngine::Instance()->init(this, url, tokenTee3);
 
     if (result != AVD_OK)
     {
         cout << "AVDEngine registration failed!" << endl;
         cout << "url: " << url << endl;
         cout << "token: " << token << endl;
+        return -1;
+    }
+    else
+    {
+        cout << "AVDEngine initialization successful !!" << endl;
+    }
+    cout << "AVDEngine  end!" << endl;
+    return result;
+}
+
+int RtcClient::init(std::string url, std::string appkey, std::string secretkey)
+{
+
+    //
+    cout << "AVDEngine start" << endl;
+    int result = 0;
+    rtc::IAVDEngine::Instance()->uninit();
+    // 设置日志文件
+    rtc::IAVDEngine::Instance()->setLogParams("verbose realtstamp", "mclient.log");
+
+    rtc::IAVDEngine::Instance()->setOption(eo_video_codec_priority, &g_videocodec);
+    rtc::IAVDEngine::Instance()->setOption(eo_camera_capability_default, &g_cap);
+    // 初始化
+    result = rtc::IAVDEngine::Instance()->init(this, url, appkey, secretkey);
+
+    if (result != AVD_OK)
+    {
+        cout << "AVDEngine registration failed!" << endl;
+        cout << "url: " << url << endl;
+        cout << "appkey: " << appkey << endl;
+        cout << "secretkey: " << secretkey << endl;
         return -1;
     }
     else
@@ -51,6 +92,7 @@ int RtcClient::joinRoom(std::string roomid, std::string userid, std::string user
 {
     int ret = 0;
     cout << "join room ,roomid=" << roomid;
+    m_isJoind = true;
     m_user.userId = userid;
     m_user.userName = username;
     m_roomid = roomid;
@@ -65,8 +107,9 @@ int RtcClient::joinRoom(std::string roomid, std::string userid, std::string user
         m_chat = IMChat::getChat(m_roomobj);
         m_chat->setListener(this);
 
-        m_audioPipeIn = new AudioInPipeOnly(16000, 1);
+        m_audioPipeIn = new AudioInPipeOnly(g_sampelRate, g_channels);
         GlobalDeviceManager::SetAudioInterface(m_audioPipeIn, NULL);
+        m_audioPipeOut = new AudioOutPipeOnly(g_sampelRate * g_sziePerSample);
     }
     if (m_isInitSuccess)
     {
@@ -78,11 +121,26 @@ int RtcClient::joinRoom(std::string roomid, std::string userid, std::string user
 int RtcClient::leave(int reason)
 {
     int ret = 0;
+    m_isJoind = false;
     if (m_audio)
     {
         m_audio->closeMicrophone();
+        if (m_audioSubed)
+        {
+            m_audio->unsubscribe(m_audioSubUserId);
+        }
         m_audio->setListener(NULL);
         m_audio = NULL;
+        if (m_audioPipeIn)
+        {
+            delete m_audioPipeIn;
+            m_audioPipeIn = NULL;
+        }
+        if (m_audioPipeOut)
+        {
+            delete m_audioPipeOut;
+            m_audioPipeOut = NULL;
+        }
     }
     if (m_video)
     {
@@ -142,9 +200,22 @@ int RtcClient::subAudioStream(const std::string &targetUserId)
     {
         return -1;
     }
-    return m_audio->subscribe(targetUserId);
+    if (m_audio->isAudioPublished(targetUserId))
+    {
+        return m_audio->subscribe(targetUserId);
+    }
+    // wait for audio sub notify
+    m_audioSubUserId = targetUserId;
+    return 0;
 }
-int RtcClient::getAudioStream(const std::string &targetUserId, char *data, int dataSize) {}
+int RtcClient::getAudioStream(const std::string &targetUserId, char *data, int dataSize)
+{
+    if (!m_audio || !m_audioPipeOut)
+    {
+        return 0;
+    }
+    return m_audioPipeOut->getAudioData(targetUserId, data, dataSize);
+}
 int RtcClient::CreatRoom()
 {
     int res = -1;
@@ -243,6 +314,35 @@ void RtcClient::onPublicMessage(const AvdMessage &message)
 void RtcClient::onPrivateMessage(const AvdMessage &message)
 {
 }
-void RtcClient::onAudioData(const UserId &userId, uint64 timestamp, uint32 sampleRate, uint32 channels, const void *data, uint32 len)
+void RtcClient::onMicrophoneStatusNotify(rtc::MicrophoneStatus status, const rtc::UserId &fromUserId)
+{
+    if (!m_audio)
+    {
+        return;
+    }
+    if (rtc::MicrophoneStatus::ds_published == status && fromUserId == m_audioSubUserId)
+    {
+        m_audio->subscribe(m_audioSubUserId);
+        m_audioSubed = true;
+    }
+    else if (rtc::MicrophoneStatus::ds_ready == status && fromUserId == m_audioSubUserId && m_audioSubed)
+    {
+        m_audio->unregisterPCMDataListener(m_audioSubUserId);
+        m_audio->unsubscribe(m_audioSubUserId);
+        m_audioSubed = false;
+    }
+}
+void RtcClient::onSubscribeMicrophoneResult(Result result, const UserId &fromId)
+{
+    if (!m_audio)
+    {
+        return;
+    }
+    if (AVD_OK == result && fromId == m_audioSubUserId && m_audioPipeOut)
+    {
+        m_audio->registerPCMDataListener(m_audioSubUserId, m_audioPipeOut, m_audioPipeOut->sampleRate(), m_audioPipeOut->channels());
+    }
+}
+void RtcClient::onUnsubscribeMicrophoneResult(Result result, const UserId &fromId)
 {
 }

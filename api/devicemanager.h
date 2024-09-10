@@ -2,292 +2,292 @@
 #define RT_DeviceManager_H_
 #include "api/common.h"
 namespace rtc {
-    /**
-    *
-    * æ‘„åƒå¤´çƒ­æ’æ‹”æ¥å£.
-    */
-    class CameraListener {
-    public:
-        /** æ‘„åƒå¤´æ’å…¥é€šçŸ¥
-        *
-        * @param[in] camera æ‘„åƒå¤´ä¿¡æ¯ã€‚
-        * @note å½“ç³»ç»Ÿä¸­æœ‰æ‘„åƒå¤´è®¾å¤‡æ’å…¥æ—¶ï¼Œæ­¤å›è°ƒè§¦å‘ã€‚
-        */
-        virtual void OnCameraPlugin(const rtc::Camera camera) = 0;
-        /** æ‘„åƒå¤´æ‹”å‡ºé€šçŸ¥
-        *
-        * @param[in] camera æ‘„åƒå¤´ä¿¡æ¯ã€‚
-        * @note å½“ç³»ç»Ÿä¸­æœ‰æ‘„åƒå¤´è®¾å¤‡æ‹”å‡ºæ—¶ï¼Œæ­¤å›è°ƒè§¦å‘ã€‚
-        */
-        virtual void OnCameraPlugout(const rtc::Camera camera) = 0;
-    protected:
-        virtual ~CameraListener() {}
-    };
-    /**
-    *
-    * å½•éŸ³è®¾å¤‡çƒ­æ’æ‹”æ¥å£ã€‚
-    */
-    class MicrophoneListener {
-    public:
-        /** éº¦å…‹é£æ’å…¥é€šçŸ¥
-        *
-        * @param[in] microphone éº¦å…‹é£ä¿¡æ¯ã€‚
-        * @note å½“ç³»ç»Ÿä¸­æœ‰éº¦å…‹é£è®¾å¤‡æ’å…¥æ—¶ï¼Œæ­¤å›è°ƒè§¦å‘ã€‚
-        */
-        virtual void OnMicrophonePlugin(const rtc::Microphone microphone) = 0;
-        /** éº¦å…‹é£æ‹”å‡ºé€šçŸ¥
-        *
-        * @param[in] microphone éº¦å…‹é£ä¿¡æ¯ã€‚
-        * @note å½“ç³»ç»Ÿä¸­æœ‰éº¦å…‹é£è®¾å¤‡æ‹”å‡ºæ—¶ï¼Œæ­¤å›è°ƒè§¦å‘ã€‚
-        */
-        virtual void OnMicrophonePlugout(const rtc::Microphone microphone) = 0;
-        /** éº¦å…‹é£è¢«æ”¹å˜é€šçŸ¥
-        *
-        * @param[in] microphone éº¦å…‹é£ä¿¡æ¯ã€‚
-        * @note å½“å½•éŸ³è®¾å¤‡åˆ‡æ¢æ—¶ï¼Œè§¦å‘æ­¤å›è°ƒã€‚
-        */
-        virtual void OnRecordingMicrophoneChanged(const rtc::Microphone microphone) = 0;
-        /** éº¦å…‹é£éŸ³é‡è¢«æ”¹å˜é€šçŸ¥
-        *
-        * @param[in] volume éŸ³é‡å€¼ã€‚
-        * @note å½“å½•éŸ³è®¾å¤‡çš„éŸ³é‡å¤§å°è¢«è°ƒæ•´æ—¶ï¼Œè§¦å‘æ­¤å›è°ƒã€‚
-        */
-        virtual void OnMicrophoneVolumeChanged(uint32 volume) = 0;
-    protected:
-        virtual ~MicrophoneListener() {}
-    };
-    /**
-    *
-    * æ’­æ”¾è®¾å¤‡çƒ­æ’æ‹”æ¥å£ã€‚
-    */
-    class SpeakerListener {
-    public:
-        /** æ‰¬å£°å™¨æ’å…¥é€šçŸ¥
-        *
-        * @param[in] speaker æ‰¬å£°å™¨ä¿¡æ¯ã€‚
-        * @note å½“ç³»ç»Ÿä¸­æœ‰æ‰¬å£°å™¨è®¾å¤‡æ’å…¥æ—¶ï¼Œæ­¤å›è°ƒè§¦å‘ã€‚
-        */
-        virtual void OnSpeakerPlugin(const rtc::Speaker speaker) = 0;
-        /** æ‰¬å£°å™¨æ‹”å‡ºé€šçŸ¥
-        *
-        * @param[in] speaker æ‰¬å£°å™¨ä¿¡æ¯ã€‚
-        * @note å½“ç³»ç»Ÿä¸­æœ‰æ‰¬å£°å™¨è®¾å¤‡æ‹”å‡ºæ—¶ï¼Œæ­¤å›è°ƒè§¦å‘ã€‚
-        */
-        virtual void OnSpeakerPlugout(const rtc::Speaker speaker) = 0;
-        /** æ‰¬å£°å™¨è¢«åˆ‡æ¢é€šçŸ¥
-        *
-        * @param[in] speaker æ‰¬å£°å™¨ä¿¡æ¯ã€‚
-        * @note å½“æ’­æ”¾è®¾å¤‡åˆ‡æ¢æ—¶ï¼Œè§¦å‘æ­¤å›è°ƒã€‚
-        */
-        virtual void OnPlayoutSpeakerChanged(const rtc::Speaker speaker) = 0;
-        /** æ‰¬å£°å™¨éŸ³é‡è¢«æ”¹å˜é€šçŸ¥
-        *
-        * @param[in] volume éŸ³é‡å€¼ã€‚
-        * @note å½“æ’­æ”¾è®¾å¤‡çš„éŸ³é‡å¤§å°è¢«è°ƒæ•´æ—¶ï¼Œè§¦å‘æ­¤å›è°ƒã€‚
-        */
-        virtual void OnSpeakerVolumeChanged(uint32 volume) = 0;
-    protected:
-        virtual ~SpeakerListener() {}
-    };
-    /**
-    *
-    * PCM 16ä½ éŸ³é¢‘å¯¼å…¥æ¥å£ã€‚è¯¥æ¥å£åªåœ¨ç‰¹å®šæ¨¡å¼ä¸‹ä½¿ç”¨ï¼Œä¸€èˆ¬ä¸ºåµŒå…¥å¼ç­‰æœ‰ç‰¹æ®ŠéŸ³é¢‘é©±åŠ¨æ¥å£çš„å¹³å°å‡†å¤‡ã€‚
-    */
-    class AudioInInterface {
-    public:
-        /** éŸ³é¢‘é‡‡é›†ï¼Œå¯¼å…¥æ¥å£åˆå§‹åŒ–
-        *
-        * @param[in,out] sampleRate éŸ³é¢‘é‡‡æ ·ç‡ã€‚
-        * @param[in,out] channels   éŸ³é¢‘é€šé“æ•°ã€‚
-        * @param[in,out] processIntervalMS   æ•°æ®è¯»å–æ—¶é—´é—´éš”ï¼Œé»˜è®¤ä¸ºæ¯10MSè¯»å–ä¸€æ¬¡æ•°æ®ã€‚
-        * @return è¿”å›åˆå§‹åŒ–æˆåŠŸæˆ–è€…å¤±è´¥ï¼ˆtrue/falseï¼‰ã€‚å¤±è´¥å°†å¯¼å…¥æ— æ•ˆï¼Œå…¶ä»–ç»ˆç«¯å°†ä¸ä¼šå¬åˆ°è¯¥ç»ˆç«¯çš„å£°éŸ³ã€‚
-        * @note sampleRateé»˜è®¤48000ï¼Œchannelsé»˜è®¤ä¸º2ã€‚å¦‚æœä¸æ›´æ”¹å°†ä½¿ç”¨é»˜è®¤å€¼ï¼Œè¦æ±‚çœŸå®é‡‡é›†å¿…é¡»äºæ­¤ä¸€è‡´ã€‚
-        */
-        virtual bool onInit(int& sampleRate, int& channels, int& processIntervalMS) = 0;
-        /** éŸ³é¢‘é‡‡é›†ï¼Œå¯¼å…¥PCMæ•°æ®å›è°ƒæ¥å£
-        *
-        * @param[in] sampleRate éŸ³é¢‘é‡‡æ ·ç‡ã€‚
-        * @param[in] channels   éŸ³é¢‘é€šé“æ•°ã€‚
-        * @param[in] data       éŸ³é¢‘æ•°æ®å¯¼å…¥å†…å­˜åœ°å€ï¼Œéœ€è¦æ‹·è´åˆ°æ”¹åœ°å€ã€‚
-        * @param[in] len        éŸ³é¢‘æ•°æ®å¯¼å…¥é•¿åº¦ï¼Œå•ä½å­—èŠ‚ã€‚
-        * @return çœŸå®æ‹·è´çš„æ•°æ®é•¿åº¦ã€‚
-        * @note æ¯æ¬¡ä¼ å…¥10MSçš„æ•°æ®é‡ã€‚
-        * @note é•¿åº¦è®¡ç®—å…¬å¼:len = sampleRate/100*channels*2
-        */
-        virtual int onReadData(int sampleRate,
-            int channels,
-            char* data,
-            unsigned int len) = 0;
-    protected:
-        virtual ~AudioInInterface() {}
-    };
-    /**
-    *
-    * PCM 16ä½ éŸ³é¢‘å¯¼å‡ºæ¥å£ã€‚è¯¥æ¥å£åªåœ¨ç‰¹å®šæ¨¡å¼ä¸‹ä½¿ç”¨ï¼Œä¸€èˆ¬ä¸ºåµŒå…¥å¼ç­‰æœ‰ç‰¹æ®ŠéŸ³é¢‘é©±åŠ¨æ¥å£çš„å¹³å°å‡†å¤‡ã€‚
-    */
-    class AudioOutInterface {
-    public:
-        /** éŸ³é¢‘æ’­æ”¾ï¼Œå¯¼å‡ºæ¥å£åˆå§‹åŒ–
-        *
-        * @param[in,out] sampleRate éŸ³é¢‘é‡‡æ ·ç‡ã€‚
-        * @param[in,out] channels   éŸ³é¢‘é€šé“æ•°ã€‚
-        * @param[in,out] processIntervalMS   æ•°æ®è¯»å–æ—¶é—´é—´éš”ï¼Œé»˜è®¤ä¸ºæ¯10MSè¯»å–ä¸€æ¬¡æ•°æ®ã€‚
-        * @return è¿”å›åˆå§‹åŒ–æˆåŠŸæˆ–è€…å¤±è´¥ï¼ˆtrue/falseï¼‰ã€‚å¤±è´¥å°†å¯¼å‡ºæ— æ•ˆï¼Œè¯¥ç»ˆç«¯å°†å¬ä¸åˆ°å£°éŸ³ã€‚
-        * @note sampleRateé»˜è®¤48000ï¼Œchannelsé»˜è®¤ä¸º2ã€‚å¦‚æœä¸æ›´æ”¹å°†ä½¿ç”¨é»˜è®¤å€¼ã€‚
-        */
-        virtual bool onInit(int& sampleRate, int& channels, int& processIntervalMS) = 0;
-        /** éŸ³é¢‘æ’­æ”¾ï¼Œå¯¼å‡ºPCMæ•°æ®å›è°ƒæ¥å£
-        *
-        * @param[in] sampleRate éŸ³é¢‘é‡‡æ ·ç‡ã€‚
-        * @param[in] channels   éŸ³é¢‘é€šé“æ•°ã€‚
-        * @param[in] data       éŸ³é¢‘æ•°æ®å¯¼å‡ºå†…å­˜åœ°å€ï¼Œæºå¸¦äº†çœŸå®çš„å£°éŸ³æ•°æ®ã€‚
-        * @param[in] len        éŸ³é¢‘æ•°æ®å¯¼å‡ºé•¿åº¦ï¼Œå•ä½å­—èŠ‚ã€‚
-        * @note æ¯æ¬¡ä¼ å…¥10MSçš„æ•°æ®é‡ã€‚
-        * @note é•¿åº¦è®¡ç®—å…¬å¼:len = sampleRate/100*channels*2
-        */
-        virtual void onWriteData(int sampleRate,
-            int channels,
-            const int8* data,
-            unsigned int len) = 0;
-    protected:
-        virtual ~AudioOutInterface() {}
-    };
-    /**
-    *
-    * å…¨å±€è®¾å¤‡ç®¡ç†æ¥å£ã€‚
-    */
-    class RT_API_EXPORT GlobalDeviceManager {
-    public:
-        /** è·å–è®¾å¤‡ç®¡ç†æ¥å£å¥æŸ„ã€‚
-        *
-        * @return è¿”å›å¥æŸ„ã€‚
-        */
-        static GlobalDeviceManager* Instance();
+	/**
+	*
+	* ÉãÏñÍ·ÈÈ²å°Î½Ó¿Ú.
+	*/
+	class CameraListener {
+	public:
+		/** ÉãÏñÍ·²åÈëÍ¨Öª
+		*
+		* @param[in] camera ÉãÏñÍ·ĞÅÏ¢¡£
+		* @note µ±ÏµÍ³ÖĞÓĞÉãÏñÍ·Éè±¸²åÈëÊ±£¬´Ë»Øµ÷´¥·¢¡£
+		*/
+		virtual void OnCameraPlugin(const rtc::Camera camera) = 0;
+		/** ÉãÏñÍ·°Î³öÍ¨Öª
+		*
+		* @param[in] camera ÉãÏñÍ·ĞÅÏ¢¡£
+		* @note µ±ÏµÍ³ÖĞÓĞÉãÏñÍ·Éè±¸°Î³öÊ±£¬´Ë»Øµ÷´¥·¢¡£
+		*/
+		virtual void OnCameraPlugout(const rtc::Camera camera) = 0;
+	protected:
+		virtual ~CameraListener() {}
+	};
+	/**
+	*
+	* Â¼ÒôÉè±¸ÈÈ²å°Î½Ó¿Ú¡£
+	*/
+	class MicrophoneListener {
+	public:
+		/** Âó¿Ë·ç²åÈëÍ¨Öª
+		*
+		* @param[in] microphone Âó¿Ë·çĞÅÏ¢¡£
+		* @note µ±ÏµÍ³ÖĞÓĞÂó¿Ë·çÉè±¸²åÈëÊ±£¬´Ë»Øµ÷´¥·¢¡£
+		*/
+		virtual void OnMicrophonePlugin(const rtc::Microphone microphone) = 0;
+		/** Âó¿Ë·ç°Î³öÍ¨Öª
+		*
+		* @param[in] microphone Âó¿Ë·çĞÅÏ¢¡£
+		* @note µ±ÏµÍ³ÖĞÓĞÂó¿Ë·çÉè±¸°Î³öÊ±£¬´Ë»Øµ÷´¥·¢¡£
+		*/
+		virtual void OnMicrophonePlugout(const rtc::Microphone microphone) = 0;
+		/** Âó¿Ë·ç±»¸Ä±äÍ¨Öª
+		*
+		* @param[in] microphone Âó¿Ë·çĞÅÏ¢¡£
+		* @note µ±Â¼ÒôÉè±¸ÇĞ»»Ê±£¬´¥·¢´Ë»Øµ÷¡£
+		*/
+		virtual void OnRecordingMicrophoneChanged(const rtc::Microphone microphone) = 0;
+		/** Âó¿Ë·çÒôÁ¿±»¸Ä±äÍ¨Öª
+		*
+		* @param[in] volume ÒôÁ¿Öµ¡£
+		* @note µ±Â¼ÒôÉè±¸µÄÒôÁ¿´óĞ¡±»µ÷ÕûÊ±£¬´¥·¢´Ë»Øµ÷¡£
+		*/
+		virtual void OnMicrophoneVolumeChanged(uint32 volume) = 0;
+	protected:
+		virtual ~MicrophoneListener() {}
+	};
+	/**
+	*
+	* ²¥·ÅÉè±¸ÈÈ²å°Î½Ó¿Ú¡£
+	*/
+	class SpeakerListener {
+	public:
+		/** ÑïÉùÆ÷²åÈëÍ¨Öª
+		*
+		* @param[in] speaker ÑïÉùÆ÷ĞÅÏ¢¡£
+		* @note µ±ÏµÍ³ÖĞÓĞÑïÉùÆ÷Éè±¸²åÈëÊ±£¬´Ë»Øµ÷´¥·¢¡£
+		*/
+		virtual void OnSpeakerPlugin(const rtc::Speaker speaker) = 0;
+		/** ÑïÉùÆ÷°Î³öÍ¨Öª
+		*
+		* @param[in] speaker ÑïÉùÆ÷ĞÅÏ¢¡£
+		* @note µ±ÏµÍ³ÖĞÓĞÑïÉùÆ÷Éè±¸°Î³öÊ±£¬´Ë»Øµ÷´¥·¢¡£
+		*/
+		virtual void OnSpeakerPlugout(const rtc::Speaker speaker) = 0;
+		/** ÑïÉùÆ÷±»ÇĞ»»Í¨Öª
+		*
+		* @param[in] speaker ÑïÉùÆ÷ĞÅÏ¢¡£
+		* @note µ±²¥·ÅÉè±¸ÇĞ»»Ê±£¬´¥·¢´Ë»Øµ÷¡£
+		*/
+		virtual void OnPlayoutSpeakerChanged(const rtc::Speaker speaker) = 0;
+		/** ÑïÉùÆ÷ÒôÁ¿±»¸Ä±äÍ¨Öª
+		*
+		* @param[in] volume ÒôÁ¿Öµ¡£
+		* @note µ±²¥·ÅÉè±¸µÄÒôÁ¿´óĞ¡±»µ÷ÕûÊ±£¬´¥·¢´Ë»Øµ÷¡£
+		*/
+		virtual void OnSpeakerVolumeChanged(uint32 volume) = 0;
+	protected:
+		virtual ~SpeakerListener() {}
+	};
+	/**
+	*
+	* PCM 16Î» ÒôÆµµ¼Èë½Ó¿Ú¡£¸Ã½Ó¿ÚÖ»ÔÚÌØ¶¨Ä£Ê½ÏÂÊ¹ÓÃ£¬Ò»°ãÎªÇ¶ÈëÊ½µÈÓĞÌØÊâÒôÆµÇı¶¯½Ó¿ÚµÄÆ½Ì¨×¼±¸¡£
+	*/
+	class AudioInInterface {
+	public:
+		/** ÒôÆµ²É¼¯£¬µ¼Èë½Ó¿Ú³õÊ¼»¯
+		*
+		* @param[in,out] sampleRate ÒôÆµ²ÉÑùÂÊ¡£
+		* @param[in,out] channels   ÒôÆµÍ¨µÀÊı¡£
+		* @param[in,out] processIntervalMS   Êı¾İ¶ÁÈ¡Ê±¼ä¼ä¸ô£¬Ä¬ÈÏÎªÃ¿10MS¶ÁÈ¡Ò»´ÎÊı¾İ¡£
+		* @return ·µ»Ø³õÊ¼»¯³É¹¦»òÕßÊ§°Ü£¨true/false£©¡£Ê§°Ü½«µ¼ÈëÎŞĞ§£¬ÆäËûÖÕ¶Ë½«²»»áÌıµ½¸ÃÖÕ¶ËµÄÉùÒô¡£
+		* @note sampleRateÄ¬ÈÏ48000£¬channelsÄ¬ÈÏÎª2¡£Èç¹û²»¸ü¸Ä½«Ê¹ÓÃÄ¬ÈÏÖµ£¬ÒªÇóÕæÊµ²É¼¯±ØĞëÓÚ´ËÒ»ÖÂ¡£
+		*/
+		virtual bool onInit(int& sampleRate, int& channels, int& processIntervalMS) = 0;
+		/** ÒôÆµ²É¼¯£¬µ¼ÈëPCMÊı¾İ»Øµ÷½Ó¿Ú
+		*
+		* @param[in] sampleRate ÒôÆµ²ÉÑùÂÊ¡£
+		* @param[in] channels   ÒôÆµÍ¨µÀÊı¡£
+		* @param[in] data       ÒôÆµÊı¾İµ¼ÈëÄÚ´æµØÖ·£¬ĞèÒª¿½±´µ½¸ÄµØÖ·¡£
+		* @param[in] len        ÒôÆµÊı¾İµ¼Èë³¤¶È£¬µ¥Î»×Ö½Ú¡£
+		* @return ÕæÊµ¿½±´µÄÊı¾İ³¤¶È¡£
+		* @note Ã¿´Î´«Èë10MSµÄÊı¾İÁ¿¡£
+		* @note ³¤¶È¼ÆËã¹«Ê½:len = sampleRate/100*channels*2
+		*/
+		virtual int onReadData(int sampleRate,
+			int channels,
+			char* data,
+			unsigned int len) = 0;
+	protected:
+		virtual ~AudioInInterface() {}
+	};
+	/**
+	*
+	* PCM 16Î» ÒôÆµµ¼³ö½Ó¿Ú¡£¸Ã½Ó¿ÚÖ»ÔÚÌØ¶¨Ä£Ê½ÏÂÊ¹ÓÃ£¬Ò»°ãÎªÇ¶ÈëÊ½µÈÓĞÌØÊâÒôÆµÇı¶¯½Ó¿ÚµÄÆ½Ì¨×¼±¸¡£
+	*/
+	class AudioOutInterface {
+	public:
+		/** ÒôÆµ²¥·Å£¬µ¼³ö½Ó¿Ú³õÊ¼»¯
+		*
+		* @param[in,out] sampleRate ÒôÆµ²ÉÑùÂÊ¡£
+		* @param[in,out] channels   ÒôÆµÍ¨µÀÊı¡£
+		* @param[in,out] processIntervalMS   Êı¾İ¶ÁÈ¡Ê±¼ä¼ä¸ô£¬Ä¬ÈÏÎªÃ¿10MS¶ÁÈ¡Ò»´ÎÊı¾İ¡£
+		* @return ·µ»Ø³õÊ¼»¯³É¹¦»òÕßÊ§°Ü£¨true/false£©¡£Ê§°Ü½«µ¼³öÎŞĞ§£¬¸ÃÖÕ¶Ë½«Ìı²»µ½ÉùÒô¡£
+		* @note sampleRateÄ¬ÈÏ48000£¬channelsÄ¬ÈÏÎª2¡£Èç¹û²»¸ü¸Ä½«Ê¹ÓÃÄ¬ÈÏÖµ¡£
+		*/
+		virtual bool onInit(int& sampleRate, int& channels, int& processIntervalMS) = 0;
+		/** ÒôÆµ²¥·Å£¬µ¼³öPCMÊı¾İ»Øµ÷½Ó¿Ú
+		*
+		* @param[in] sampleRate ÒôÆµ²ÉÑùÂÊ¡£
+		* @param[in] channels   ÒôÆµÍ¨µÀÊı¡£
+		* @param[in] data       ÒôÆµÊı¾İµ¼³öÄÚ´æµØÖ·£¬Ğ¯´øÁËÕæÊµµÄÉùÒôÊı¾İ¡£
+		* @param[in] len        ÒôÆµÊı¾İµ¼³ö³¤¶È£¬µ¥Î»×Ö½Ú¡£
+		* @note Ã¿´Î´«Èë10MSµÄÊı¾İÁ¿¡£
+		* @note ³¤¶È¼ÆËã¹«Ê½:len = sampleRate/100*channels*2
+		*/
+		virtual void onWriteData(int sampleRate,
+			int channels,
+			const int8* data,
+			unsigned int len) = 0;
+	protected:
+		virtual ~AudioOutInterface() {}
+	};
+	/**
+	*
+	* È«¾ÖÉè±¸¹ÜÀí½Ó¿Ú¡£
+	*/
+	class RT_API_EXPORT GlobalDeviceManager {
+	public:
+		/** »ñÈ¡Éè±¸¹ÜÀí½Ó¿Ú¾ä±ú¡£
+		*
+		* @return ·µ»Ø¾ä±ú¡£
+		*/
+		static GlobalDeviceManager* Instance();
 
-        /** è®¾ç½®éŸ³é¢‘å¯¼å…¥å¯¼å‡ºæ¥å£ã€‚
-        *
-        * @param[in] in     éŸ³é¢‘å¯¼å…¥æ¥å£ã€‚
-        * @param[in] out    éŸ³é¢‘å¯¼å‡ºæ¥å£ã€‚
-        * @return ï¼ˆtrue/falseï¼‰æˆåŠŸè¯¥æ¥å£æœ‰æ•ˆï¼Œç›®å‰åªæœ‰ç‰¹å®šæ¨¡å¼ï¼ˆåµŒå…¥å¼å¹³å°ï¼‰ä¸‹æ”¹æ¥å£æœ‰æ•ˆï¼Œã€‚
-        */
-        static bool SetAudioInterface(AudioInInterface* in, AudioOutInterface* out);
-        static bool GetCameras(rtc::CamerasType& devices);
-        static bool GetMicphones(rtc::MicrophonesType& devices);
-        static bool GetFakeMicphone(rtc::Microphone& micphone);
-        static bool GetSpeakers(rtc::SpeakersType& devices);
-        static bool GetScreenWnds(rtc::ScreensType& devices);
-        static bool GetRecordingMicrophone(rtc::Microphone& micphone);
-        static bool SetRecordingMicrophone(const rtc::Microphone&  micphone);
-        static bool GetPlayoutSpeaker(rtc::Speaker& speaker);
-        static bool SetPlayoutSpeaker(const rtc::Speaker& speaker);
+		/** ÉèÖÃÒôÆµµ¼Èëµ¼³ö½Ó¿Ú¡£
+		*
+		* @param[in] in     ÒôÆµµ¼Èë½Ó¿Ú¡£
+		* @param[in] out    ÒôÆµµ¼³ö½Ó¿Ú¡£
+		* @return £¨true/false£©³É¹¦¸Ã½Ó¿ÚÓĞĞ§£¬Ä¿Ç°Ö»ÓĞÌØ¶¨Ä£Ê½£¨Ç¶ÈëÊ½Æ½Ì¨£©ÏÂ¸Ä½Ó¿ÚÓĞĞ§£¬¡£
+		*/
+		static bool SetAudioInterface(AudioInInterface* in, AudioOutInterface* out);
+		static bool GetCameras(rtc::CamerasType& devices);
+		static bool GetMicphones(rtc::MicrophonesType& devices);
+		static bool GetFakeMicphone(rtc::Microphone& micphone);
+		static bool GetSpeakers(rtc::SpeakersType& devices);
+		static bool GetScreenWnds(rtc::ScreensType& devices);
+		static bool GetRecordingMicrophone(rtc::Microphone& micphone);
+		static bool SetRecordingMicrophone(const rtc::Microphone&  micphone);
+		static bool GetPlayoutSpeaker(rtc::Speaker& speaker);
+		static bool SetPlayoutSpeaker(const rtc::Speaker& speaker);
 
-            static bool SetPlayoutVolume(uint32 volume);
-            static uint32 GetPlayoutVolume();
-            static bool SetRecordingVolume(uint32 volume);
-            static uint32 GetRecordingVolume();
+		static bool SetPlayoutVolume(uint32 volume);
+		static uint32 GetPlayoutVolume();
+		static bool SetRecordingVolume(uint32 volume);
+		static uint32 GetRecordingVolume();
 
-        static rtc::CapabilitiesType GetCapabilities(const std::string& id);
+		static rtc::CapabilitiesType GetCapabilities(const std::string& id);
 
-            virtual void AddCameraListener(CameraListener* cameraListener) = 0;
-            virtual void AddMicrophoneListener(MicrophoneListener*	microphoneListener) = 0;
-            virtual void AddSpeakerListener(SpeakerListener* cameraListener) = 0;
+		virtual void AddCameraListener(CameraListener* cameraListener) = 0;
+		virtual void AddMicrophoneListener(MicrophoneListener*	microphoneListener) = 0;
+		virtual void AddSpeakerListener(SpeakerListener* cameraListener) = 0;
 
-            virtual void RemoveCameraListener(CameraListener*	cameraListener) = 0;
-            virtual void RemoveMicrophoneListener(MicrophoneListener*	microphoneListener) = 0;
-            virtual void RemoveSpeakerListener(SpeakerListener*	speakerListener) = 0;
-
-
-
-
-
-
-            virtual uint32 GetInputLevel() = 0;
-            virtual uint32 GetOutputLevel() = 0;
-
-        virtual bool RecordPlayStart() = 0;
-        virtual bool RecordPlayStop() = 0;
-        virtual bool PlayVoice(const std::string& file, bool loop, rtc::FileFormats format) = 0;
-        virtual bool IsPlayingVoice() = 0;
-        virtual bool StopVoice() = 0;
-
-
-            virtual ~GlobalDeviceManager() {};
-        };
-
-    /**
-    *
-    * å¤šä»½è®¾å¤‡ç®¡ç†æ¥å£ã€‚
-    *
-    * è¯¥æ¥å£åœ¨å…¨å±€çš„åŸºç¡€ä¸Šï¼ŒæŠŠè®¾å¤‡æ˜ å°„æˆäº†å¤šä»½ã€‚å…è®¸åœ¨åŒä¸€ä¸ªæˆ¿é—´äº†ä½¿ç”¨åŒä¸€ä¸ªçœŸå®çš„æ‘„åƒå¤´å’Œéº¦å…‹é£ã€‚
-    */
-    class RT_API_EXPORT MultiDeviceManager {
-    public:
-        static MultiDeviceManager* Create();
-        static void Destroy(MultiDeviceManager* mgr);
-        /** è®¾ç½®éŸ³é¢‘å¯¼å…¥å¯¼å‡ºæ¥å£ã€‚
-        *
-        * @param[in] in     éŸ³é¢‘å¯¼å…¥æ¥å£ã€‚
-        * @param[in] out    éŸ³é¢‘å¯¼å‡ºæ¥å£ã€‚
-        * @return ï¼ˆtrue/falseï¼‰æˆåŠŸè¯¥æ¥å£æœ‰æ•ˆï¼Œç›®å‰åªæœ‰ç‰¹å®šæ¨¡å¼ï¼ˆåµŒå…¥å¼å¹³å°ï¼‰ä¸‹æ”¹æ¥å£æœ‰æ•ˆã€‚
-        */
-        static bool SetAudioInterface(AudioInInterface* in, AudioOutInterface* out);
-        /** è·å–è§†é¢‘è®¾å¤‡ã€‚
-        *
-        * @param[out] devices   æ‘„åƒå¤´åˆ—è¡¨ã€‚
-        * @return trueè·å–è®¾å¤‡æˆåŠŸã€‚falseè·å–å¤±è´¥ã€‚
-        */
-        virtual bool GetCameras(rtc::CamerasType& devices) = 0;
-        /** è·å–å½•éŸ³è®¾å¤‡ã€‚
-        *
-        * @param[out] devices   éº¦å…‹é£åˆ—è¡¨ã€‚
-        * @return trueè·å–è®¾å¤‡æˆåŠŸã€‚falseè·å–å¤±è´¥ã€‚
-        */
-        virtual bool GetMicphones(rtc::MicrophonesType& devices) = 0;
-        /** è·å–å½•éŸ³è®¾å¤‡ã€‚
-        *
-        * @param[out] devices   éº¦å…‹é£åˆ—è¡¨ã€‚
-        * @return trueè·å–è®¾å¤‡æˆåŠŸã€‚falseè·å–å¤±è´¥ã€‚
-        */
-        virtual bool GetFakeMicphone(rtc::Microphone& micphone) = 0;
-        virtual bool GetSpeakers(rtc::SpeakersType& devices) = 0;
-        virtual bool GetScreenWnds(rtc::ScreensType& devices) = 0;
-        virtual bool GetRecordingMicrophone(rtc::Microphone& micphone) = 0;
-        virtual bool SetRecordingMicrophone(const rtc::Microphone&  micphone) = 0;
-        virtual bool GetPlayoutSpeaker(rtc::Speaker& speaker) = 0;
-        virtual bool SetPlayoutSpeaker(const rtc::Speaker& speaker) = 0;
-
-            virtual bool SetPlayoutVolume(uint32 volume) = 0;
-            virtual uint32 GetPlayoutVolume() = 0;
-            virtual bool SetRecordingVolume(uint32 volume) = 0;
-            virtual uint32 GetRecordingVolume() = 0;
-
-        virtual rtc::CapabilitiesType GetCapabilities(const std::string& id) = 0;
-
-            virtual void AddCameraListener(CameraListener* cameraListener) = 0;
-            virtual void AddMicrophoneListener(MicrophoneListener*	microphoneListener) = 0;
-            virtual void AddSpeakerListener(SpeakerListener* cameraListener) = 0;
-
-            virtual void RemoveCameraListener(CameraListener*	cameraListener) = 0;
-            virtual void RemoveMicrophoneListener(MicrophoneListener*	microphoneListener) = 0;
-            virtual void RemoveSpeakerListener(SpeakerListener*	speakerListener) = 0;
+		virtual void RemoveCameraListener(CameraListener*	cameraListener) = 0;
+		virtual void RemoveMicrophoneListener(MicrophoneListener*	microphoneListener) = 0;
+		virtual void RemoveSpeakerListener(SpeakerListener*	speakerListener) = 0;
 
 
 
 
 
 
-            virtual uint32 GetInputLevel() = 0;
-            virtual uint32 GetOutputLevel() = 0;
+		virtual uint32 GetInputLevel() = 0;
+		virtual uint32 GetOutputLevel() = 0;
 
-        virtual bool RecordPlayStart() = 0;
-        virtual bool RecordPlayStop() = 0;
-        virtual bool PlayVoice(const std::string& file, bool loop, rtc::FileFormats format) = 0;
-        virtual bool IsPlayingVoice() = 0;
-        virtual bool StopVoice() = 0;
+		virtual bool RecordPlayStart() = 0;
+		virtual bool RecordPlayStop() = 0;
+		virtual bool PlayVoice(const std::string& file, bool loop, rtc::FileFormats format) = 0;
+		virtual bool IsPlayingVoice() = 0;
+		virtual bool StopVoice() = 0;
 
-    protected:
-        virtual ~MultiDeviceManager() {};
-    };
+
+		virtual ~GlobalDeviceManager() {};
+	};
+
+	/**
+	*
+	* ¶à·İÉè±¸¹ÜÀí½Ó¿Ú¡£
+	*
+	* ¸Ã½Ó¿ÚÔÚÈ«¾ÖµÄ»ù´¡ÉÏ£¬°ÑÉè±¸Ó³Éä³ÉÁË¶à·İ¡£ÔÊĞíÔÚÍ¬Ò»¸ö·¿¼äÁËÊ¹ÓÃÍ¬Ò»¸öÕæÊµµÄÉãÏñÍ·ºÍÂó¿Ë·ç¡£
+	*/
+	class RT_API_EXPORT MultiDeviceManager {
+	public:
+		static MultiDeviceManager* Create();
+		static void Destroy(MultiDeviceManager* mgr);
+		/** ÉèÖÃÒôÆµµ¼Èëµ¼³ö½Ó¿Ú¡£
+		*
+		* @param[in] in     ÒôÆµµ¼Èë½Ó¿Ú¡£
+		* @param[in] out    ÒôÆµµ¼³ö½Ó¿Ú¡£
+		* @return £¨true/false£©³É¹¦¸Ã½Ó¿ÚÓĞĞ§£¬Ä¿Ç°Ö»ÓĞÌØ¶¨Ä£Ê½£¨Ç¶ÈëÊ½Æ½Ì¨£©ÏÂ¸Ä½Ó¿ÚÓĞĞ§¡£
+		*/
+		static bool SetAudioInterface(AudioInInterface* in, AudioOutInterface* out);
+		/** »ñÈ¡ÊÓÆµÉè±¸¡£
+		*
+		* @param[out] devices   ÉãÏñÍ·ÁĞ±í¡£
+		* @return true»ñÈ¡Éè±¸³É¹¦¡£false»ñÈ¡Ê§°Ü¡£
+		*/
+		virtual bool GetCameras(rtc::CamerasType& devices) = 0;
+		/** »ñÈ¡Â¼ÒôÉè±¸¡£
+		*
+		* @param[out] devices   Âó¿Ë·çÁĞ±í¡£
+		* @return true»ñÈ¡Éè±¸³É¹¦¡£false»ñÈ¡Ê§°Ü¡£
+		*/
+		virtual bool GetMicphones(rtc::MicrophonesType& devices) = 0;
+		/** »ñÈ¡Â¼ÒôÉè±¸¡£
+		*
+		* @param[out] devices   Âó¿Ë·çÁĞ±í¡£
+		* @return true»ñÈ¡Éè±¸³É¹¦¡£false»ñÈ¡Ê§°Ü¡£
+		*/
+		virtual bool GetFakeMicphone(rtc::Microphone& micphone) = 0;
+		virtual bool GetSpeakers(rtc::SpeakersType& devices) = 0;
+		virtual bool GetScreenWnds(rtc::ScreensType& devices) = 0;
+		virtual bool GetRecordingMicrophone(rtc::Microphone& micphone) = 0;
+		virtual bool SetRecordingMicrophone(const rtc::Microphone&  micphone) = 0;
+		virtual bool GetPlayoutSpeaker(rtc::Speaker& speaker) = 0;
+		virtual bool SetPlayoutSpeaker(const rtc::Speaker& speaker) = 0;
+
+		virtual bool SetPlayoutVolume(uint32 volume) = 0;
+		virtual uint32 GetPlayoutVolume() = 0;
+		virtual bool SetRecordingVolume(uint32 volume) = 0;
+		virtual uint32 GetRecordingVolume() = 0;
+
+		virtual rtc::CapabilitiesType GetCapabilities(const std::string& id) = 0;
+
+		virtual void AddCameraListener(CameraListener* cameraListener) = 0;
+		virtual void AddMicrophoneListener(MicrophoneListener*	microphoneListener) = 0;
+		virtual void AddSpeakerListener(SpeakerListener* cameraListener) = 0;
+
+		virtual void RemoveCameraListener(CameraListener*	cameraListener) = 0;
+		virtual void RemoveMicrophoneListener(MicrophoneListener*	microphoneListener) = 0;
+		virtual void RemoveSpeakerListener(SpeakerListener*	speakerListener) = 0;
+
+
+
+
+
+
+		virtual uint32 GetInputLevel() = 0;
+		virtual uint32 GetOutputLevel() = 0;
+
+		virtual bool RecordPlayStart() = 0;
+		virtual bool RecordPlayStop() = 0;
+		virtual bool PlayVoice(const std::string& file, bool loop, rtc::FileFormats format) = 0;
+		virtual bool IsPlayingVoice() = 0;
+		virtual bool StopVoice() = 0;
+
+	protected:
+		virtual ~MultiDeviceManager() {};
+	};
 }
 
 #endif
