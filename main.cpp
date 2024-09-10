@@ -9,7 +9,7 @@
 #include <sys/time.h>
 #include <fcntl.h>
 
-#include "mediainout.h"
+#include "rtcclient.h"
 
 void getvalue(const std::string argument, const std::string tag, std::string&value){
     if(argument.find(tag) == std::string::npos)
@@ -67,7 +67,7 @@ int main(int argc, char *argv[])
     printf("--decodeable:%s,--inputfile;%s\n", g_decodeable.c_str(), g_inputfile.c_str());
     printf("--url:%s,--appkey;%s,--secretkey:%s\n", g_url.c_str(), g_appkey.c_str(), g_secretkey.c_str());
     printf("--roomid:%s,--audio;%s,--video:%s\n", g_roomid.c_str(), g_audioOprate.c_str(), g_videoOprate.c_str());
-    MClient mcc;
+    RtcClient mcc;
     int res = 0;
     res = mcc.InitEngine();
     printf("============================================================res:%d...\n",res);

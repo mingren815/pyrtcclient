@@ -4,8 +4,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <pthread.h>
-#include <signal.h>
 #include <map>
 #include <sys/time.h>
 #include <fcntl.h>
@@ -20,8 +18,12 @@
 #include "api/videocapture.h"
 #include "api/devicemanager.h"
 #include "api/videorender.h"
-using namespace std;
 
+#include "rtcyuvin.h"
+#include "rtcyuvout.h"
+#include "rtcaudioin.h"
+
+using namespace std;
 using namespace rtc;
 
 static rtc::String _url = "https://v.nice2meet.cn";
@@ -39,357 +41,24 @@ std::string g_decodeable = "2";
 std::string g_inputfile = "VideoInput.h264";
 
 
-uint32 callid = 0;
 rtc::VideoCodec g_videocodec = rtc::codec_h264;
 rtc::CameraCapability g_cap(1280, 720, 20);
-
-void initdata(){
-
-}
-
-
-const int g_processIntervalMS = 100;//ms
-
-long timestamp()
-{
-    struct timeval tv;
-    gettimeofday(&tv, NULL);
-    return (tv.tv_sec * 1000 + tv.tv_usec / 1000);
-}
-
 
 /***************************************************************************************/
 /****************************叁体引擎rtc*********************************************/
 /***************************************************************************************/
-class MyVideoRender :public IVideoRender{
-    public:
-    MyVideoRender(const DeviceId& id):m_id(id),m_fp(0){
-        std::string filename = "data_"+m_id+".yuv";
-        if(!m_fp){
-            m_fp = fopen(filename.c_str(),"wb");
-        }
-    }
-    ~MyVideoRender(){
-        if(m_fp){
-            fclose(m_fp);
-            m_fp = 0;
-        }
-    }
-    virtual void SetSize(int width, int height){;}
-    virtual void RenderFrame(const IVideoFrame& frame){
-        if(m_fp)
-        {
-        int nLen = frame.strideY() * frame.height();
-         fwrite(frame.dataY(), 1, nLen, m_fp);
-         nLen = frame.strideU() * frame.height() /2;
-         fwrite(frame.dataU(), 1, nLen, m_fp);
-         fwrite(frame.dataV(), 1, nLen, m_fp);
-        }
-    }
-    private:
-    DeviceId m_id;
-    FILE* m_fp;
-};
-std::map<DeviceId,MyVideoRender*> m_rendermap;
-typedef rtc::FakeVideoCapturer*    FakeVideoCapType;
-const int read_buff_len = 1024 * 1000;
-class EncodedCaptureFromFile :
-    public rtc::FakeVideoCapturer::Listener {
+
+class RtcClientBase :public rtc::IAVDEngine::IListener, public rtc::IRoom::IListener,public rtc::IMAudio::IListener,public rtc::IMVideo::IListener{
 public:
-    EncodedCaptureFromFile(FourCC format, std::string filePath)
-        : m_capture(NULL)
-        , m_isStart(false)
-        , m_format(format) {
-        m_capture = FakeVideoCapturer::Create(this, m_format);
-        cout << "EncodedCaptureFromFile";
-        // m_networkThread = new rtc::Thread();
-        // m_networkThread->SetName("H264CaptureFromFile Thread", NULL);
-        // m_networkThread->Start(this);
-        
-        
-        pthread_create(&m_thdId, NULL, EncodedCaptureFromFile::Run, (void *)this );
-        
-        m_threadActive = true;
-    FilePaths = filePath;
-        m_fd = fopen(FilePaths.c_str(), "rb");
-        m_currread = 0;
-        memset(m_buffer, 0, sizeof(m_buffer));
-        m_currinput = read_buff_len - 4;
-        printf(",open fd = %d\n", m_fd);
-        fseek(m_fd, 0, SEEK_END);
-        m_filesize = ftell(m_fd);
-        fseek(m_fd, 0, SEEK_SET);
-    }
-    ~EncodedCaptureFromFile() {
-        cout << "~EncodedCaptureFromFile";
-        m_isStart = false;
-        m_threadActive = false;
-        // m_networkThread->Stop();
-        // delete m_networkThread;
-        // m_networkThread = NULL;
-        FakeVideoCapturer::Destroy(m_capture);
-        if (m_fd) {
-            fclose(m_fd);
-            m_fd = NULL;
-        }
-    }
-    void setStartImported(bool enalbe) {
-        m_isStart = enalbe;
-    }
-    virtual bool OnStart() {
-        cout << "EncodedCaptureFromFile::OnStart" <<endl;
-        m_isStart = true;
-        return true;
-    }
-    virtual void OnStop() {
-        cout << "EncodedCaptureFromFile::OnStop"<<endl;
-        m_isStart = false;
-        //m_capture = NULL;
-    }
-    static void* Run(void *pArg) {
-        EncodedCaptureFromFile* pthis= (EncodedCaptureFromFile*)pArg;
-        while (pthis->m_threadActive) {
-            if (!pthis->m_isStart) {
-                sleep(1);
-                continue;
-            }
-   //         cout<<"============== start run capture video."<<endl;
-            int64_t before = timestamp();
-        //printf("ptread Failure!!!\n");
-        
-            // scan buffer for a frame
-            uint8* currbegin = NULL, *currend = NULL;
-            int    currlen = 0;
-            bool   findOneHeader = false;
-            uint8* curr = &pthis->m_buffer[pthis->m_currinput];
-            while (curr < &pthis->m_buffer[read_buff_len - 4]) {
-                if (0 == *curr && 0 == *(curr + 1) && 0 == *(curr + 2) && 1 == *(curr + 3)) {    
-                    if (!findOneHeader) {
-                        findOneHeader = true;
-                        currbegin = curr;
-                    }
-                    else if (curr - currbegin > 100) {
-                        currend = curr;
-                        currlen = currend - currbegin;
-                        pthis->m_currinput = currend - &pthis->m_buffer[0];
-                        break;
-                    }
-                }
-                ++curr;
-            }
-           
-            if (currlen > 0) {
-                //IncomingH264Data(currbegin, currlen);
-                pthis->m_capture->inputEncodedFrame(0, 160, 128, currbegin, currlen);
-                printf("Video read input len=%d\n",currlen);
-                
-            }
-            else {
-                pthis->m_currread -= (read_buff_len - pthis->m_currinput);
-                if (pthis->m_currread < 0) {
-                    pthis->m_currread = 0;
-                }
-                fseek(pthis->m_fd, pthis->m_currread, SEEK_SET);
-                int size = fread(pthis->m_buffer, 1, read_buff_len, pthis->m_fd);
-                if (size != read_buff_len) {
-                    pthis->m_currread = 0;
-                    pthis->m_currinput = 0;
-                    curr = &pthis->m_buffer[0];
-                    memset(pthis->m_buffer, 0, sizeof(pthis->m_buffer));
-                    fseek(pthis->m_fd, 0, SEEK_SET);
-                    continue;
-                }
-                pthis->m_currread += size;
-                pthis->m_currinput = 0;
-            }
-            int64_t diff = 30 - (before - timestamp());
-            //RTC_LOG_T_F(LS_INFO) << "diff: " << diff << ",currlen=" << currlen);
-            if (diff > 10) {
-                usleep((diff - 1)*1000);
-                //thread->SleepMs((int)(diff - 1));
-            }
-        }
-        cout<<"============== start run  end capture...";
-        pthread_exit(NULL);
-    }
-    //void static IncomingH264Data(uint8* data, uint32 len) {
-    //    if (!pthis->m_isStart) {
-    //        return;
-    //    }
-    //    pthis->m_capture->inputEncodedFrame(0, 160, 128, data, len);
-    //
-    //}
-    FakeVideoCapType GetCapture() {
-        return m_capture;
-    }
-private:
-    FakeVideoCapType    m_capture;
-    bool                m_isStart;
-    //rtc::Thread*        m_networkThread;
-    pthread_t           m_thdId;
-    bool                m_threadActive;
-    FILE*                m_fd;
-    int                    m_currread;
-    uint8                m_buffer[read_buff_len];
-    int                    m_currinput;
-    uint64              m_filesize;
-    FourCC              m_format;
-    std::string         FilePaths;
-};
-////out remote video
-class FakeEncodedFrameListener : public rtc::IEncodedFrameListener {
-public:
-    FakeEncodedFrameListener(std::string file)
-        : count(0)
-        , m_fd(0) {
-        m_fd = fopen(file.c_str(), "wb");
-    }
-    void onEncodedFrame(VideoCodec codec, uint64 timestamp, bool isKeyFrame,int width,int height, const uint8 *data, unsigned int len) {
-        if (!isKeyFrame && count == 0) {
-            printf("!isKeyFrame && count==0");
-            return;
-        }
-        ++count;
-        size += len;
-        if (count % 10 == 0) {
-        }
-        printf("IEncodedFrameListener: %d Frames, %d Byte\r\n", count, size);
-        if (m_fd) {
-            fwrite(data, len, 1, m_fd);
-        }
-    }
-    ~FakeEncodedFrameListener() {
-
-        if (m_fd) {
-            fclose(m_fd);
-            m_fd = NULL;
-        }
-    }
-    int count;
-    int size;
-    FILE* m_fd;
-};
-///////////////////////////////audio proxy
-
-char *m_audiobuf = NULL;
-class AudioInProxy : public rtc::AudioInInterface {
-public:
-    AudioInProxy(int sampleRate, int channels)
-        : m_sampleRate(sampleRate)
-        , m_channels(channels)
-        , m_count(0)
-        , m_fd(0) {
-
-        m_fd = fopen("AudioInProxy.PCM", "rb");
-        inputsize = 0;
-        m_audiobuf = (char*)malloc(sizeof(char) * 19200);
-    }
-    ~AudioInProxy() {
-        if (m_fd) {
-            fclose(m_fd);
-            m_fd = NULL;
-        }
-    }
-    bool onInit(int& sampleRate, int& channels, int& processIntervalMS) override {
-        sampleRate = m_sampleRate;
-        channels = m_channels;
-        processIntervalMS = g_processIntervalMS;
-        return true;
-    }
-    int onReadData(int sampleRate,
-                   int channels,
-                   char* data,
-                   unsigned int len) override {
-        ++m_count;
-        if (m_count % 10 == 0) {
-            long time = timestamp();
-#ifdef WIN32
-            RTC_LOG_T_F(LS_INFO) 
-                << ", time=" << time
-                << ", count= " << m_count
-                << ", sampleRate=" << sampleRate 
-                << ", channels=" << channels 
-                << ", len=" << len;
-#else
-            //printf("ReadData: time=%d, count= %d, sampleRate=%d, channels=%d, len=%d \r\n", time, m_count, sampleRate, channels, len);
-#endif // WIN32
-
-        }
-        if(m_fd) {
-            
-            size_t count = fread(data, len, 1, m_fd);
-            if (count <= 0) {
-                fseek(m_fd, 0, SEEK_SET);
-            }
-            return count * len;
-        }
-    }
-    int inputsize;
-    int m_sampleRate;
-    int m_channels;
-    int m_count;
-    FILE* m_fd;
-};
-class AudioOutProxy : public rtc::AudioOutInterface {
-public:
-    AudioOutProxy(int sampleRate, int channels)
-        : m_sampleRate(sampleRate)
-        , m_channels(channels)
-        , m_count(0)
-        , m_fd(0) {
-        m_fd = fopen("AudioOutProxy.PCM", "wb");
-    }
-    ~AudioOutProxy() {
-        if (m_fd) {
-            fclose(m_fd);
-            m_fd = NULL;
-        }
-    }
-    bool onInit(int& sampleRate, int& channels, int& processIntervalMS)override {
-        sampleRate = m_sampleRate;
-        channels = m_channels;
-        processIntervalMS = g_processIntervalMS;
-        return true;
-    }
-    void onWriteData(int sampleRate,
-                     int channels,
-                     const int8* data,
-                     unsigned int len) override {
-        ++m_count;
-        if (m_count % 10 == 0) {
-            long time = timestamp();
-#ifdef WIN32
-            RTC_LOG_T_F(LS_INFO)
-                << ", time=" << time
-                << ", count= " << m_count
-                << ", sampleRate=" << sampleRate
-                << ", channels=" << channels
-                << ", len=" << len;
-#else
-            //printf("WriteData: time=%d, count= %d, sampleRate=%d, channels=%d, len=%d \r\n", time, m_count, sampleRate, channels, len);
-#endif // WIN32
-
-        }
-        if (m_fd) {
-            fwrite(data, len, 1, m_fd);
-        }
-    }
-
-    int m_sampleRate;
-    int m_channels;
-    int m_count;
-    FILE* m_fd;
-};
-class MClient :public rtc::IAVDEngine::IListener, public rtc::IRoom::IListener,public rtc::IMAudio::IListener,public rtc::IMVideo::IListener{
-public:
-    MClient():m_roomobj(0),m_audio(0),m_video(0){
+    RtcClientBase():m_roomobj(0),m_audio(0),m_video(0){
+        m_callid = 0;
 		m_user.userId = "1498201";
 		m_user.userName = "kangfeng";
 		m_fakeCamera.id = m_user.userId + "_123456789hahah264";
 		m_fakeCamera.name = "ahahasdkfja";
         rtc::IAVDEngine::Instance();
     }
-    ~MClient(){ UninitEngine(); }
+    ~RtcClientBase(){ UninitEngine(); }
     int InitEngine(){
         cout << "AVDEngine start" << endl;
         int result = 0;
@@ -455,7 +124,7 @@ public:
         rominfo.setRoomMode(rtc::rm_mcu);
         rominfo.roomTopic = "123";
         //安排房间
-        res = rtc::IAVDEngine::Instance()->scheduleRoom(callid, rominfo);
+        res = rtc::IAVDEngine::Instance()->scheduleRoom(m_callid, rominfo);
         cout << "res: " << res << endl;
         return res;
     }
@@ -687,9 +356,11 @@ public:
 private:
     std::string m_roomid;
     std::string m_userName;
+    uint32 m_callid;
     rtc::User m_user;
     rtc::Camera m_fakeCamera;
     std::map<std::string, FakeEncodedFrameListener *> m_fakelistener;
+    std::map<DeviceId,MyVideoRender*> m_rendermap;
 };
 
 
