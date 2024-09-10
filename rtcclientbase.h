@@ -31,7 +31,13 @@ using namespace rtc;
 /****************************叁体引擎rtc*********************************************/
 /***************************************************************************************/
 
-class RtcClientBase : public rtc::IAVDEngine::IListener, public rtc::IRoom::IListener, public rtc::IMAudio::IListener, public rtc::IMVideo::IListener, public rtc::IMChat::IListener
+class RtcClientBase
+    : public rtc::IAVDEngine::IListener,
+      public rtc::IRoom::IListener,
+      public rtc::IMAudio::IListener,
+      public rtc::IMVideo::IListener,
+      public rtc::IMChat::IListener,
+      public rtc::IAudioDataListener
 {
 public:
     RtcClientBase() {}
@@ -117,8 +123,17 @@ public:
         cout << "onUnpublishLocalResult ,result=" << result << ",DeviceId=" << fromId << endl;
     }
 
-    //mchat 模块消息回调
+    // mchat 模块消息回调
     virtual void onPublicMessage(const AvdMessage &message) {};
 
     virtual void onPrivateMessage(const AvdMessage &message) {};
+
+    /** 音频数据回调接口
+     * @param[in] timestamp 时间戳, mi second。
+     * @param[in] sampleRate 采样率。
+     * @param[in] channels 通道数。
+     * @param[in] buf 数据存储指针。
+     * @param[in] len 数据长度。
+     */
+    virtual void onAudioData(const UserId &userId, uint64 timestamp, uint32 sampleRate, uint32 channels, const void *data, uint32 len) {}
 };

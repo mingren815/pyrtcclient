@@ -14,7 +14,7 @@ static rtc::CameraCapability g_cap(1280, 720, 20);
 class RtcClient : public RtcClientInterface, public RtcClientBase
 {
 public:
-    enum State
+    enum RoomState
     {
          initing = 0,
          initsuccess = 1,
@@ -34,7 +34,7 @@ public:
     int sendPublicMessage(int msgType, std::string message) override;
 
     int publishAuditStream(char *data, int len) override;
-    int publishVedioStream(char *data, int len) override;
+    int publishVedioStream(int w, int h, char *data, int len) override;
 
     int subAudioStream(const std::string &targetUserId) override;
     int getAudioStream(const std::string &targetUserId, char *data, int dataSize) override;
@@ -44,7 +44,6 @@ private:
 
 private:
     virtual void onInitResult(Result result);
-    virtual void onScheduleRoomResult(uint32 callId, Result result, const rtc::RoomId &roomId);
     virtual void onJoinResult(Result result);
     virtual void onConnectionStatus(rtc::ConnectionStatus status);
     virtual void onPublishCameraNotify(const Camera &camera);
@@ -57,12 +56,15 @@ private:
     virtual void onPublicMessage(const AvdMessage &message);
     virtual void onPrivateMessage(const AvdMessage &message);
 
+    virtual void onAudioData(const UserId &userId, uint64 timestamp, uint32 sampleRate, uint32 channels, const void *data, uint32 len);
+
 public:
     rtc::IRoom *m_roomobj;
     rtc::IMAudio *m_audio;
     rtc::IMVideo *m_video;
     rtc::IMChat *m_chat;
-    EncodedCaptureFromFile *m_pipe;
+    YUV420CapturePipe *m_videoPipeIn;
+    AudioInPipeOnly *m_audioPipeIn;
 
 private:
     bool m_isInitSuccess;

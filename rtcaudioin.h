@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <mutex>
 
 #include "api/maudio.h"
 #include "api/devicemanager.h"
@@ -12,10 +13,10 @@ using namespace rtc;
 
 // audio proxy
 const int g_processIntervalMS = 100; // ms
-class AudioInProxy : public rtc::AudioInInterface
+class AudioInProxyFromFile : public rtc::AudioInInterface
 {
 public:
-    AudioInProxy(int sampleRate, int channels)
+    AudioInProxyFromFile(int sampleRate, int channels)
         : m_sampleRate(sampleRate), m_channels(channels), m_count(0), m_fd(0), m_audiobuf(NULL)
     {
 
@@ -23,7 +24,7 @@ public:
         inputsize = 0;
         m_audiobuf = (char *)malloc(sizeof(char) * 19200);
     }
-    ~AudioInProxy()
+    ~AudioInProxyFromFile()
     {
         if (m_fd)
         {
@@ -77,15 +78,64 @@ public:
     FILE *m_fd;
     char *m_audiobuf;
 };
-class AudioOutProxy : public rtc::AudioOutInterface
+
+class AudioInPipeOnly : public rtc::AudioInInterface
 {
 public:
-    AudioOutProxy(int sampleRate, int channels)
+    AudioInPipeOnly(int sampleRate, int channels)
+        : m_sampleRate(sampleRate), m_channels(channels), m_count(0), m_audiobuf(NULL)
+    {
+
+        m_inputsize = 0;
+        m_audiobuf = (char *)malloc(sizeof(char) * 19200);
+    }
+    ~AudioInPipeOnly()
+    {
+        if (m_audiobuf)
+        {
+            free(m_audiobuf);
+            m_audiobuf = NULL;
+        }
+    }
+    void inputAudioSample(char *data, unsigned int len)
+    {
+        std::lock_guard<std::mutex> gurad(m_mtx);
+        memcpy(m_audiobuf, data, len);
+    }
+    bool onInit(int &sampleRate, int &channels, int &processIntervalMS) override
+    {
+        sampleRate = m_sampleRate;
+        channels = m_channels;
+        processIntervalMS = g_processIntervalMS;
+        return true;
+    }
+    int onReadData(int sampleRate,
+                   int channels,
+                   char *data,
+                   unsigned int len) override
+    {
+        ++m_count;
+        std::lock_guard<std::mutex> gurad(m_mtx);
+        memcpy(data, m_audiobuf, len);
+        return 0;
+    }
+    int m_inputsize;
+    int m_sampleRate;
+    int m_channels;
+    int m_count;
+    std::mutex m_mtx;
+    char *m_audiobuf;
+};
+
+class AudioOutProxyToFile : public rtc::AudioOutInterface
+{
+public:
+    AudioOutProxyToFile(int sampleRate, int channels)
         : m_sampleRate(sampleRate), m_channels(channels), m_count(0), m_fd(0)
     {
         m_fd = fopen("AudioOutProxy.PCM", "wb");
     }
-    ~AudioOutProxy()
+    ~AudioOutProxyToFile()
     {
         if (m_fd)
         {

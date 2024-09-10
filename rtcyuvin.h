@@ -17,7 +17,53 @@ using namespace std;
 using namespace rtc;
 
 const int read_buff_len = 1024 * 1000;
+
 typedef rtc::FakeVideoCapturer *FakeVideoCapType;
+class YUV420CapturePipe : public rtc::FakeVideoCapturer::Listener
+{
+public:
+    YUV420CapturePipe(FourCC format)
+        : m_capture(NULL), m_isStart(false), m_format(format)
+    {
+        m_capture = FakeVideoCapturer::Create(this, m_format);
+        cout << "EncodedCaptureFromFile";
+    }
+    ~YUV420CapturePipe()
+    {
+        m_isStart = false;
+        if (m_capture)
+        {
+            FakeVideoCapturer::Destroy(m_capture);
+            m_capture = NULL;
+        }
+    }
+    int inputCapturedFrame(int w, int h, const uint8 *data, size_t len)
+    {
+        // 后期自己定义错误类型
+        if (!m_capture || !m_isStart)
+        {
+            return -1;
+        }
+        return m_capture->inputCapturedFrame(0, m_format, w, h, data, len, 0, false);
+    }
+    FakeVideoCapType GetCapture()
+    {
+        return m_capture;
+    }
+
+private:
+    bool OnStart() override
+    {
+        m_isStart = true;
+    }
+    void OnStop() override
+    {
+        m_isStart = false;
+    }
+    FakeVideoCapType m_capture;
+    bool m_isStart;
+    FourCC m_format;
+};
 class EncodedCaptureFromFile : public rtc::FakeVideoCapturer::Listener
 {
 public:
