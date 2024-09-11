@@ -29,7 +29,7 @@ public:
     int sendPrivateMessage(int msgType, std::string message, std::string targetUserId) override;
     int sendPublicMessage(int msgType, std::string message) override;
 
-    int publishAuditStream(char *data, int len) override;
+    int publishAudioStream(char *data, int len) override;
     int publishVedioStream(int w, int h, char *data, int len) override;
 
     int subAudioStream(const std::string &targetUserId) override;
