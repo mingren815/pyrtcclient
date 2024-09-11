@@ -181,7 +181,7 @@ int RtcClient::sendPublicMessage(int msgType, std::string message)
     }
 }
 
-int RtcClient::publishAuditStream(char *data, int len)
+int RtcClient::publishAudioStream(char *data, int len)
 {
     if (!m_audio || !m_audioDeviceIn)
     {
