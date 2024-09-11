@@ -37,7 +37,8 @@ public:
 
 public:
     int getState();
-    int CreatRoom();
+    int ScheduleRoom();
+    int JoinRoomInternal();
 
 private:
     virtual void onInitResult(Result result);

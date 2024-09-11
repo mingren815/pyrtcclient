@@ -11,15 +11,18 @@
 
 #include "rtcclient.h"
 
-void getvalue(const std::string argument, const std::string tag, std::string&value){
-    if(argument.find(tag) == std::string::npos)
+void getvalue(const std::string argument, const std::string tag, std::string &value)
+{
+    if (argument.find(tag) == std::string::npos)
         return;
     size_t pos = argument.find("=");
-    if (pos != std::string::npos){
+    if (pos != std::string::npos)
+    {
         value = argument.substr(pos + 1, argument.length() - pos - 1);
     }
 }
-void printfhelp(){
+void printfhelp()
+{
     printf("--help,show the help\n");
     printf("--audio=0|1|2 ,0:import,1:export,2:all,default is 2\n");
     printf("--video=0|1|2 ,0:import,1:export,2:all,default is 2\n");
@@ -46,19 +49,22 @@ static std::string g_inputfile = "VideoInput.h264";
 
 int main(int argc, char *argv[])
 {
-    
+
     std::string shelp;
-    if (argc == 0){
+    if (argc == 0)
+    {
         printfhelp();
         return 0;
     }
-        
-    for (int i = 0; i < argc; i++){
+
+    for (int i = 0; i < argc; i++)
+    {
         printf("===========argument[%d]is:%s\n", i, argv[i]);
         std::string argstr = argv[i];
-        if(argstr.find("--help") != std::string::npos){
+        if (argstr.find("--help") != std::string::npos)
+        {
             printfhelp();
-        return 0;
+            return 0;
         }
         getvalue(argv[i], "--audio", g_audioOprate);
         getvalue(argv[i], "--video", g_videoOprate);
@@ -69,8 +75,9 @@ int main(int argc, char *argv[])
         getvalue(argv[i], "--decodeable", g_decodeable);
         getvalue(argv[i], "--inputfile", g_inputfile);
     }
-    
-    if (g_audioOprate.empty() && g_videoOprate.empty()){
+
+    if (g_audioOprate.empty() && g_videoOprate.empty())
+    {
         printf("--roomid:%s,--audio;%s,--video:%s\n", g_roomid.c_str(), g_audioOprate.c_str(), g_videoOprate.c_str());
         printfhelp();
         return 0;
@@ -81,21 +88,29 @@ int main(int argc, char *argv[])
     RtcClient mcc;
     int res = 0;
     res = mcc.init(g_url, g_appkey, g_secretkey);
-    printf("============================================================res:%d...\n",res);
+    printf("============================================================res:%d...\n", res);
     if (res < 0)
         return -1;
 
     char quit;
-    if (g_roomid.empty()){
-       mcc.CreatRoom();
+    if (g_roomid.empty())
+    {
+        mcc.ScheduleRoom();
     }
-    else{
-       mcc.joinRoom(g_roomid, "AITestUserId","AITestUserName");
+    else
+    {
+        printf("===========================joinRoom=======================res:%d...\n", res);
+        mcc.joinRoom(g_roomid, "AITestUserId", "AITestUserName");
+        printf("===========================joinRoom= end======================res:%d...\n", res);
     }
-    while (true){
-        cin>>quit;
+    sleep(3);
+    mcc.subAudioStream("n2m-u-8EC0D9D36BDA35474389D1CA18F93981DB81");
+    while (true)
+    {
+        cin >> quit;
         printf("============================================================step2...\n");
-        if (quit == 'Q' || quit == 'q'){
+        if (quit == 'Q' || quit == 'q')
+        {
             printf("quit...\n");
             break;
         }
@@ -105,5 +120,3 @@ int main(int argc, char *argv[])
     mcc.uninit();
     return 0;
 }
-
-

@@ -92,38 +92,21 @@ void RtcClient::uninit()
 int RtcClient::joinRoom(std::string roomid, std::string userid, std::string username)
 {
     int ret = 0;
-    cout << "join room ,roomid=" << roomid;
-    cout << "join room ,userId=" << userid;
-    cout << "join room ,username=" << username;
+    cout << "join room ,roomid=" << roomid << endl;
+    cout << "join room ,userId=" << userid << endl;
+    cout << "join room ,username=" << username << endl;
     m_isJoind = true;
     m_user.userId = userid;
     m_user.userName = username;
     m_roomid = roomid;
     m_fakeCamera.id = userid + "_virturevideoid";
     m_fakeCamera.name = "fakevideoin";
-    if (!m_roomobj)
-    {
-        m_roomobj = rtc::IRoom::obtain(m_roomid);
-        m_roomobj->setListener(this);
-        m_audio = IMAudio::getAudio(m_roomobj);
-        m_audio->setListener(this);
-        m_video = IMVideo::getVideo(m_roomobj);
-        m_video->setListener(this);
-        m_chat = IMChat::getChat(m_roomobj);
-        m_chat->setListener(this);
 
-        m_audioDeviceIn = new AudioDeviceInDumy(g_sampelRate, g_channels);
-        m_audioDeviceOut = new AudioDeviceOutDumy(g_sampelRate, g_channels);
-        GlobalDeviceManager::SetAudioInterface(m_audioDeviceIn, m_audioDeviceOut);
-        m_audioPcmOut = new AudioPcmOut(g_sampelRate, g_channels);
-        bool autoSubAudio = false;
-        m_roomobj->setOption(ro_audio_auto_subscribe, &autoSubAudio);
-    }
-    if (m_isInitSuccess)
+    if (m_isInitSuccess && rtc::IAVDEngine::Instance()->isWorking())
     {
-        ret = m_roomobj->join(m_user, "", 0);
+        ret = JoinRoomInternal();
     }
-    cout << "END join room ,roomid=" << roomid;
+    cout << "END join room ,roomid=" << roomid << endl;
     return ret;
 }
 int RtcClient::leave(int reason)
@@ -231,9 +214,12 @@ int RtcClient::subAudioStream(const std::string &targetUserId)
     }
     if (m_audio->isAudioPublished(targetUserId))
     {
+        cout << "subscribeAudio ,targetUserId=" << targetUserId << endl;
+        m_audioSubUserId = targetUserId;
         return m_audio->subscribe(targetUserId);
     }
     // wait for audio sub notify
+    cout << "wait subscribeAudio ,targetUserId=" << targetUserId << endl;
     m_audioSubUserId = targetUserId;
     return 0;
 }
@@ -245,7 +231,7 @@ int RtcClient::getAudioStream(const std::string &targetUserId, char *data, int d
     }
     return m_audioPcmOut->getAudioData(targetUserId, data, dataSize);
 }
-int RtcClient::CreatRoom()
+int RtcClient::ScheduleRoom()
 {
     if (m_isInitSuccess)
     {
@@ -271,6 +257,39 @@ int RtcClient::CreatRoom()
         m_createRoomForTest = true;
     }
 }
+int RtcClient::JoinRoomInternal()
+{
+    if (!m_roomobj)
+    {
+        m_roomobj = rtc::IRoom::obtain(m_roomid);
+        if (!m_roomobj)
+        {
+            cout << "join room ,obtain room failed=" << endl;
+            return -1;
+        }
+        cout << "join room ,obtain=" << endl;
+        m_roomobj->setListener(this);
+        m_audio = IMAudio::getAudio(m_roomobj);
+        m_audio->setListener(this);
+        m_video = IMVideo::getVideo(m_roomobj);
+        m_video->setListener(this);
+        m_chat = IMChat::getChat(m_roomobj);
+        m_chat->setListener(this);
+
+        cout << "join room ,obtain 2=" << endl;
+        m_audioDeviceIn = new AudioDeviceInDumy(g_sampelRate, g_channels);
+        m_audioDeviceOut = new AudioDeviceOutDumy(g_sampelRate, g_channels);
+        cout << "join room ,obtain 3=" << endl;
+        GlobalDeviceManager::SetAudioInterface(m_audioDeviceIn, m_audioDeviceOut);
+        cout << "join room ,obtain 4=" << endl;
+        m_audioPcmOut = new AudioPcmOut(g_sampelRate, g_channels);
+        bool autoSubAudio = false;
+        cout << "join room ,obtain 5=" << endl;
+        m_roomobj->setOption(ro_audio_auto_subscribe, &autoSubAudio);
+    }
+    return m_roomobj->join(m_user, "", 0);
+}
+
 void RtcClient::onInitResult(Result result)
 {
     cout << "result = " << result << endl;
@@ -279,13 +298,13 @@ void RtcClient::onInitResult(Result result)
     {
         m_isInitSuccess = true;
     }
-    if (m_isInitSuccess && !m_roomid.empty() && m_roomobj)
+    if (m_isInitSuccess && !m_roomid.empty())
     {
-        m_roomobj->join(m_user, "", 0);
+        JoinRoomInternal();
     }
     if (m_isInitSuccess && m_createRoomForTest)
     {
-        CreatRoom();
+        ScheduleRoom();
     }
 }
 
@@ -350,6 +369,7 @@ void RtcClient::onPrivateMessage(const AvdMessage &message)
 }
 void RtcClient::onMicrophoneStatusNotify(rtc::MicrophoneStatus status, const rtc::UserId &fromUserId)
 {
+    cout << "onMicrophoneStatusNotify ,status=" << status << ",fromUserId=" << fromUserId << endl;
     if (!m_audio)
     {
         return;
@@ -359,7 +379,7 @@ void RtcClient::onMicrophoneStatusNotify(rtc::MicrophoneStatus status, const rtc
         m_audio->subscribe(m_audioSubUserId);
         m_audioSubed = true;
     }
-    else if (rtc::MicrophoneStatus::ds_ready == status && fromUserId == m_audioSubUserId && m_audioSubed)
+    else if ((rtc::MicrophoneStatus::ds_ready == status|| rtc::MicrophoneStatus::ds_none == status) && fromUserId == m_audioSubUserId && m_audioSubed)
     {
         m_audio->unregisterPCMDataListener(m_audioSubUserId);
         m_audio->unsubscribe(m_audioSubUserId);
@@ -368,13 +388,22 @@ void RtcClient::onMicrophoneStatusNotify(rtc::MicrophoneStatus status, const rtc
 }
 void RtcClient::onSubscribeMicrophoneResult(Result result, const UserId &fromId)
 {
+    cout << "onSubscribeMicrophoneResult ,result=" << result << ",fromUserId=" << fromId << ",m_audioSubUserId=" << m_audioSubUserId << endl;
     if (!m_audio)
     {
         return;
     }
-    if (AVD_OK == result && fromId == m_audioSubUserId && m_audioPcmOut)
+    cout << "registerPCMDataListener " << ",m_audioPcmOut=" << m_audioPcmOut << endl;
+    if (AVD_OK == result && fromId == m_audioSubUserId)
     {
-        m_audio->registerPCMDataListener(m_audioSubUserId, m_audioPcmOut, m_audioPcmOut->sampleRate(), m_audioPcmOut->channels());
+        m_audioSubed = true;
+        if (m_audioPcmOut)
+        {
+            cout << "registerPCMDataListener " << ",fromUserId=" << fromId << endl;
+            m_audio->registerPCMDataListener(m_audioSubUserId, m_audioPcmOut, m_audioPcmOut->sampleRate(), m_audioPcmOut->channels());
+        }
+    }else{
+        m_audioSubed = false;
     }
 }
 void RtcClient::onUnsubscribeMicrophoneResult(Result result, const UserId &fromId)
