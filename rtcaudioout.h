@@ -105,6 +105,7 @@ public:
     AudioPcmOut(int sampleRate, int channels) : m_sampleRate(sampleRate), m_channels(channels), m_count(0), m_audioBuffer(0)
     {
         m_audioBuffer = new CircularBuffer(m_sampleRate * m_channels * 2);
+        // m_fd = fopen("AudioOutProxy.PCM", "wb");
     }
     ~AudioPcmOut()
     {
@@ -126,6 +127,10 @@ public:
         {
             // buffer  is full,
         }
+        // if (m_fd)
+        // {
+        //     fwrite(data, len, 1, m_fd);
+        // }
     }
     int getAudioData(const UserId &userId, char *data, int dataSize)
     {
@@ -139,6 +144,10 @@ public:
         {
             return 0;
         }
+        // 读取数据时 如果不够放弃该次 等待下一次读取
+        // if (m_audioBuffer->used() < dataSize){
+        //     return 0;
+        // }
         return m_audioBuffer->get_data((uint8_t *)data, dataSize);
     }
     int sampleRate() { return m_sampleRate; }
@@ -151,4 +160,5 @@ private:
     UserId m_userId;
     std::mutex m_mtx;
     CircularBuffer *m_audioBuffer;
+    // FILE *m_fd;
 };

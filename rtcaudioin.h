@@ -116,7 +116,11 @@ public:
                    unsigned int len) override
     {
         ++m_count;
+        // cout << "onReadAudio ,sampleRate=" << sampleRate << ",len=" << len << endl;
         std::lock_guard<std::mutex> gurad(m_mtx);
+        if (m_audioBuffer->used() < len){
+            return 0;
+        }
         return m_audioBuffer->get_data((uint8_t *)data, len);
     }
     int m_sampleRate;
