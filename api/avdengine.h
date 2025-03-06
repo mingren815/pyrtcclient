@@ -92,10 +92,14 @@ namespace rtc {
 
 
 				/** 启动混屏录制回调*/
-				virtual void onStartMixrecord(uint32 callId, Result result) = 0;
+				virtual void onStartMixrecord(uint32 callId, Result result,String msg,String recordid) = 0;
 
 				/** 停止混屏录制回调*/
-				virtual void onStopMixrecord(uint32 callId, Result result) = 0;
+				virtual void onStopMixrecord(uint32 callId, Result result,String msg,String data) = 0;
+
+                virtual void onCreateMedia(uint32 callId, Result result, String msg, String playid) = 0;
+                virtual void onPlayMedia(uint32 callId, Result result, String msg,String data) = 0;
+                virtual void onStopMedia(uint32 callId, Result result, String msg) = 0;
 			protected:
 				virtual ~IListener() {
 				}
@@ -151,6 +155,10 @@ namespace rtc {
 			*/
 			virtual Result initWithOEM(
 				IListener* listener, const String& severuri, const String& oemName) = 0;
+
+
+            //是否启用客户自己的认证token,默认为false,需在初始化引擎之前设置。
+            virtual void setCustomerTokenEnabled(const bool& enable) = 0;
 
 			/** 反初始化引擎
 			*
@@ -367,6 +375,10 @@ namespace rtc {
 			* @return 返回错误代码。
 			*/
 			virtual Result stopMixRecord(uint32 callId, const RoomId roomId) = 0;
+
+            virtual Result createMedia(uint32 callId, const RoomId roomId, const String name) = 0;
+            virtual Result playMedia(uint32 callId, const RoomId roomId, const String url,const String playid) = 0;
+            virtual Result stopMedia(uint32 callId, const RoomId roomId, const String playid) = 0;
 		public:
 			/** 设置引擎选项
 			*

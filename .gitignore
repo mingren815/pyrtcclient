@@ -30,3 +30,12 @@
 *.exe
 *.out
 *.app
+build/*
+.vscode
+mediainout
+*.log
+*.PCM
+*.zip
+*.wav
+
+rtcsdk-cpp.zip

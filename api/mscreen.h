@@ -322,6 +322,12 @@ namespace rtc {
             *	320x240			[250*1000,	500*1000]
             */
             virtual Result setScreenBitrate(const DeviceId& deviceId, int minBitrateBps, int maxBitrateBps) = 0;
+
+            /**设置已发布共享屏幕裁剪区域，动态调整裁剪区域
+            * @param[in]  deviceId 屏幕设备对应ID。
+            * @param[in] catx, caty,catw,cath 参数同common.h 里面CameraCapability里的catx,caty,catw,cath一样
+            */
+            virtual Result setScreenZone(const DeviceId& deviceId, float catx, float caty,float catw,float cath) = 0;
 		protected:
 			virtual ~IMScreen() {
 			}

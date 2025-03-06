@@ -140,6 +140,7 @@ namespace rtc {
 		virtual Result resetFormat(FourCC cc) = 0;
         virtual void enableLandscape(bool enable) = 0;
         virtual bool landscape() = 0;
+        virtual void SetUseScale(bool use) = 0;
 	protected:
 		virtual ~FakeVideoCapturer() {};
 	};

@@ -67,7 +67,7 @@
   #endif // RT_XROS
 #endif // XROS
 
-#if (defined(RT_LINUX) && !defined(RT_ANDROID) && defined(RT_X11)) || defined(RT_WIN32) /*|| (defined(RT_MAC) && !defined(RT_IOS))*/
+#if (defined(RT_LINUX) && !defined(RT_ANDROID) && defined(RT_X11)) || defined(RT_WIN32) || defined(RT_OHOS)/*|| (defined(RT_MAC) && !defined(RT_IOS))*/
 #ifndef RT_DESKTOP
 #define RT_DESKTOP
 #endif // RT_DESKTOP
