@@ -14,7 +14,7 @@ class RtcClient(RtcClientInterface, RtcClientBase):
     def __del__(self) -> None:
         pass
 
-    def load(self, url: str, appkey: str, secretkey: str) -> int:
+    def load(self, url: str, appkey: str, secretkey: str, log: bool) -> int:
         pass
 
     def uninit(self) -> None:

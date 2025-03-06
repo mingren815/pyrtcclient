@@ -26,8 +26,8 @@ public:
     RtcClient();
     ~RtcClient();
 
-    //int load(std::string url, std::string appkey, std::string secretkey, bool enablelog) override;
-    int load(std::string url, std::string token, bool enablelog) override;
+    int load(std::string url, std::string appkey, std::string secretkey, bool enablelog) override;
+    // int load(std::string url, std::string token, bool enablelog) override;
     void uninit();
     int joinRoom(std::string roomid, std::string selfUserId, std::string selfUserName) override;
     int loadAndJoinRoom(std::string url, std::string token, bool enablelog, std::string roomid, std::string selfUserId, std::string selfUserName, int waitSeconds) override;
@@ -47,7 +47,7 @@ public:
 
 
 
-    // ÉèÖÃÀë¿ªÖ¸Ê¾»Øµ÷
+    // è®¾ç½®ç¦»å¼€æŒ‡ç¤ºå›è°ƒ
     void setLeaveIndicationCallback(py::object callback);
 
 
@@ -109,7 +109,7 @@ private:
     bool m_createRoomForTest;
     std::map<std::string, AudioPcmOut*>  m_audioPcmOutMap;
 
-    // »Øµ÷Ïà¹ØµÄ³ÉÔ±±äÁ¿
+    // å›è°ƒç›¸å…³çš„æˆå‘˜å˜é‡
     std::mutex callback_mutex_;
     py::object leave_indication_callback_;
 };

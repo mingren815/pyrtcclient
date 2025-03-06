@@ -20,78 +20,78 @@ RtcClient::~RtcClient()
     uninit();
 }
 
-//初始化接口，开启叁体向我们鉴权之后不可用
-//int RtcClient::load(std::string url, std::string appkey, std::string secretkey, bool enablelog=false)
-//{
-//
-//    //
-//    cout << "AVDEngine start" << endl;
-//    int result = 0;
-//    // 设置日志文件
-//    if (enablelog){
-//        rtc::IAVDEngine::Instance()->setLogParams("verbose realtstamp", "mclient.log");
-//    }
-//    // device must set before rtc::IAVDEngine::Instance()->init
-//    GlobalDeviceManager::SetAudioInterface(0, 0);
-//
-//    rtc::IAVDEngine::Instance()->setOption(eo_video_codec_priority, &g_videocodec);
-//    rtc::IAVDEngine::Instance()->setOption(eo_camera_capability_default, &m_cameraCap);
-//    // 初始化
-//    result = rtc::IAVDEngine::Instance()->init(this, url, appkey, secretkey);
-//
-//    if (result != AVD_OK)
-//    {
-//        cout << "AVDEngine registration failed!" << endl;
-//        cout << "url: " << url << endl;
-//        cout << "appkey: " << appkey << endl;
-//        cout << "secretkey: " << secretkey << endl;
-//        return -1;
-//    }
-//    else
-//    {
-//        cout << "AVDEngine initialization successful !!" << endl;
-//    }
-//    cout << "AVDEngine  end!" << endl;
-//    return result;
-//}
+// 初始化接口，开启叁体向我们鉴权之后不可用
+int RtcClient::load(std::string url, std::string appkey, std::string secretkey, bool enablelog)
+{
+
+   //
+   cout << "AVDEngine start" << endl;
+   int result = 0;
+   // 设置日志文件
+   if (enablelog){
+       rtc::IAVDEngine::Instance()->setLogParams("verbose realtstamp", "mclient.log");
+   }
+   // device must set before rtc::IAVDEngine::Instance()->init
+   GlobalDeviceManager::SetAudioInterface(0, 0);
+
+   rtc::IAVDEngine::Instance()->setOption(eo_video_codec_priority, &g_videocodec);
+   rtc::IAVDEngine::Instance()->setOption(eo_camera_capability_default, &m_cameraCap);
+   // 初始化
+   result = rtc::IAVDEngine::Instance()->init(this, url, appkey, secretkey);
+
+   if (result != AVD_OK)
+   {
+       cout << "AVDEngine registration failed!" << endl;
+       cout << "url: " << url << endl;
+       cout << "appkey: " << appkey << endl;
+       cout << "secretkey: " << secretkey << endl;
+       return -1;
+   }
+   else
+   {
+       cout << "AVDEngine initialization successful !!" << endl;
+   }
+   cout << "AVDEngine  end!" << endl;
+   return result;
+}
 
 //初始化接口，开启叁体向我们鉴权之后传递uap的token
-int RtcClient::load(std::string url, std::string token, bool enablelog = false)
-{
-    cout << "AVDEngine start" << endl;
-    int result = 0;
+// int RtcClient::load(std::string url, std::string token, bool enablelog)
+// {
+//     cout << "AVDEngine start" << endl;
+//     int result = 0;
 
-    // 设置日志文件
-    if (enablelog) {
-        rtc::IAVDEngine::Instance()->setLogParams("verbose realtstamp", "mclient.log");
-    }
+//     // 设置日志文件
+//     if (enablelog) {
+//         rtc::IAVDEngine::Instance()->setLogParams("verbose realtstamp", "mclient.log");
+//     }
 
-    // 设备必须在初始化引擎前设置  
-    GlobalDeviceManager::SetAudioInterface(0, 0);
+//     // 设备必须在初始化引擎前设置  
+//     GlobalDeviceManager::SetAudioInterface(0, 0);
 
-    // 设置引擎选项 
-    rtc::IAVDEngine::Instance()->setOption(eo_video_codec_priority, &g_videocodec);
-    rtc::IAVDEngine::Instance()->setOption(eo_camera_capability_default, &m_cameraCap);
+//     // 设置引擎选项 
+//     rtc::IAVDEngine::Instance()->setOption(eo_video_codec_priority, &g_videocodec);
+//     rtc::IAVDEngine::Instance()->setOption(eo_camera_capability_default, &m_cameraCap);
 
-    // 设置叁体向我们鉴权,该选项开启后,必须使用uap的token，不需要携带Bearer 
-    rtc::IAVDEngine::Instance()->setCustomerTokenEnabled(true);
+//     // 设置叁体向我们鉴权,该选项开启后,必须使用uap的token，不需要携带Bearer 
+//     rtc::IAVDEngine::Instance()->setCustomerTokenEnabled(true);
 
-    // 初始化
-    result = rtc::IAVDEngine::Instance()->init(this, url, token);
-    cout << "url: " << url << endl;
-    cout << "token: " << token << endl;
+//     // 初始化
+//     result = rtc::IAVDEngine::Instance()->init(this, url, token);
+//     cout << "url: " << url << endl;
+//     cout << "token: " << token << endl;
 
-    if (result != AVD_OK)
-    {
-        cout << "AVDEngine registration failed!" << endl;
-        cout << "url: " << url << endl;
-        cout << "token: " << token << endl;
-        return -1;
-    }
-    cout << "AVDEngine initialization successful !!" << endl;
-    cout << "AVDEngine end!" << endl;
-    return result;
-}
+//     if (result != AVD_OK)
+//     {
+//         cout << "AVDEngine registration failed!" << endl;
+//         cout << "url: " << url << endl;
+//         cout << "token: " << token << endl;
+//         return -1;
+//     }
+//     cout << "AVDEngine initialization successful !!" << endl;
+//     cout << "AVDEngine end!" << endl;
+//     return result;
+// }
 
 void RtcClient::uninit()
 {
@@ -688,7 +688,7 @@ PYBIND11_MODULE(rtc_client, m)
                 // 但是通常不需要，因为析构函数会自动被调用
                 delete self; })
         .def("load", &RtcClient::load, "Loads the client with the given URL, token, and optionally enables logging.",
-            py::arg("url"), py::arg("token"), py::arg("enablelog") = false)
+            py::arg("url"), py::arg("appkey"), py::arg("secretkey"),py::arg("enablelog") = false)
         .def("uninit", &RtcClient::uninit)
         .def("joinRoom", &RtcClient::joinRoom)
         .def("loadAndJoinRoom", &RtcClient::loadAndJoinRoom)

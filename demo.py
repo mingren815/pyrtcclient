@@ -9,12 +9,11 @@ sample_rate = 16000
 channel = 1
 bitsize = 2
 duration_time_s = 0.1
-# url = "https://rtc-dev.uicloud.com/r/#/join"
-url = "https://rtc.uicloud.com"
+url = "https://cd.nice2meet.cn:9810"
 
-ak = "W68FH19QN2NI186THUX3XXG4CBMYKHXL"
-sk = "HM9ECOGZIBR6OOWG00G3EFVDILOZSHPT"
-roomid = '20589675'
+ak = "demo_access"
+sk = "demo_secret"
+roomid = '13350050355'
 token = ""
 
 
@@ -22,7 +21,8 @@ token = ""
 client = RtcClient()
 time.sleep(2)
 
-ret = client.load(url,token)
+##ret = client.load(url,token)
+ret = client.load(url, ak, sk)
 time.sleep(2)
 ## 加入房间
 client.joinRoom(roomid,'90091','ai_agent')
@@ -32,7 +32,7 @@ client.sendPublicMessage(0,b'hello everyone') #
 
 
 ## 发送音频
-with open('tts_wav.pcm','rb') as f:
+with open('AudioOutProxy.PCM','rb') as f:
     data = f.read()
 step = int(sample_rate*channel*bitsize*duration_time_s)
 data_len = len(data)
