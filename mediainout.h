@@ -446,7 +446,7 @@ public:
         cout << "this is CreatRoom!!" << endl;
         rtc::RoomInfo rominfo;
         rominfo.roomName = "Room_Demo";
-        rominfo.appRoomId = "";
+        rominfo.appRoomId = "201201201";
         rominfo.hostPassword = "";
         rominfo.duration = 3600;
         rominfo.maxAttendee = 5;

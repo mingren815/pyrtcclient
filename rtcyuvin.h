@@ -55,6 +55,7 @@ private:
     bool OnStart() override
     {
         m_isStart = true;
+        return m_isStart;
     }
     void OnStop() override
     {
@@ -84,7 +85,7 @@ public:
         m_currread = 0;
         memset(m_buffer, 0, sizeof(m_buffer));
         m_currinput = read_buff_len - 4;
-        printf(",open fd = %d\n", m_fd);
+        //printf(",open fd = %d\n", m_fd);
         fseek(m_fd, 0, SEEK_END);
         m_filesize = ftell(m_fd);
         fseek(m_fd, 0, SEEK_SET);

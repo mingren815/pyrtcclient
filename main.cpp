@@ -27,23 +27,25 @@ void printfhelp()
     printf("--audio=0|1|2 ,0:import,1:export,2:all,default is 2\n");
     printf("--video=0|1|2 ,0:import,1:export,2:all,default is 2\n");
     printf("--decodeable=0|1|2,0:only export encoded data,1:only export decoded data,2:endoded and yuv data all will be exported,deault is 2\n");
-    printf("--roomid=12345678917, if not set will shecdule new roomid.\n");
-    printf("--url ,server site url,default is https://v.nice2meet.cn\n");
+    printf("--roomid=00485524, if not set will shecdule new roomid.\n");
+    printf("--url ,server site url,default is https://rtc-dev.uicloud.com\n");
     printf("--appkey ,appkey ,default is demo_access.\n");
     printf("--secretkey ,secretkey,default is demo_secret.\n");
     printf("--inputfile,default is VideoInput.h264 in the current directory ");
 }
 /**************************************************************************************/
-static rtc::String _url = "https://v.nice2meet.cn";
+static rtc::String _url = "https://rtc-dev.uicloud.com";
 static rtc::String _appkey = "demo_access";
 static rtc::String _secretkey = "demo_secret";
+static rtc::String _token = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxNzI1NDQ2MTI1MTg1NjgwMTg4IiwiY2xpZW50SWQiOiJ0WHdwUWIxNGNGRkVaNkFSIiwiYXBwSWQiOiIxODEyODIxNTUwNzg0NTMyNzYyIiwidGVuYW50SWQiOiIxMzM5MTgxNjA3MjQzNzQ3MzMwIiwibm9uY2UiOiI2YzBlMDQ1ZmFiMjc0NzQzYWNjOWM2ZGFlM2YxMDg2NiIsImFjY291bnRUeXBlIjoiNDI1NiIsInRwIjoiaWciLCJ1aWQiOiIxYzAyMGQ1MThiN2Q0NDUyYTRlMWI2MWFjNmRhNzU4YyIsImF1ZCI6InRYd3BRYjE0Y0ZGRVo2QVIiLCJleHAiOjE3MzE1ODYzNjMsImlhdCI6MTczMTU4NTc1MywiaXNzIjoiaHR0cHM6Ly9hdXRoLXNpdC51aWNsb3VkLmNvbS8iLCJzdWIiOiIxNzI1NDQ2MTI1MTg1NjgwMTg4In0.wEfIZ_hjVAQZ01krGaI2HOVIRfqe2q3rnqwx23QH2-yB90pI9e0DJleuZ4NX7pbZqnXMjnGH_TMf90KLzoZ0VbkUQcyw1IJa3xheTTVKoIdJLmipnXgks1sFIz9ksd-QkL1tLb7NjAZrHwK5fCo5cSD09dlFkmpvnOAUEPkZ4E0";
 
 static std::string g_url = _url;
 static std::string g_appkey = _appkey;
 static std::string g_secretkey = _secretkey;
+static std::string g_token = _token;
 static std::string g_audioOprate = "2";
 static std::string g_videoOprate = "2";
-static std::string g_roomid;
+static std::string g_roomid = "00485524";
 static std::string g_decodeable = "2";
 static std::string g_inputfile = "VideoInput.h264";
 
@@ -87,22 +89,7 @@ int main(int argc, char *argv[])
     printf("--roomid:%s,--audio;%s,--video:%s\n", g_roomid.c_str(), g_audioOprate.c_str(), g_videoOprate.c_str());
     RtcClient mcc;
     int res = 0;
-    res = mcc.init(g_url, g_appkey, g_secretkey);
-    printf("============================================================res:%d...\n", res);
-    if (res < 0)
-        return -1;
-
-    char quit;
-    if (g_roomid.empty())
-    {
-        mcc.ScheduleRoom();
-    }
-    else
-    {
-        printf("===========================joinRoom=======================res:%d...\n", res);
-        mcc.joinRoom(g_roomid, "AITestUserId", "AITestUserName");
-        printf("===========================joinRoom= end======================res:%d...\n", res);
-    }
+    mcc.loadAndJoinRoom(g_url, token, true, g_roomid, "test_user_id", "test_user_name", 10);
     sleep(3);
     mcc.subAudioStream("n2m-u-8EC0D9D36BDA35474389D1CA18F93981DB81");
     while (true)
