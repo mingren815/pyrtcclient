@@ -28,6 +28,7 @@ public:
 
     int load(std::string url, std::string appkey, std::string secretkey, bool enablelog) override;
     // int load(std::string url, std::string token, bool enablelog) override;
+    int setAudioParams(int sampleRate, int channels, int bytesPerSample) override;
     void uninit();
     int joinRoom(std::string roomid, std::string selfUserId, std::string selfUserName) override;
     int loadAndJoinRoom(std::string url, std::string token, bool enablelog, std::string roomid, std::string selfUserId, std::string selfUserName, int waitSeconds) override;
@@ -112,6 +113,10 @@ private:
     // 回调相关的成员变量
     std::mutex callback_mutex_;
     py::object leave_indication_callback_;
+
+    int m_sampelRate;
+    int m_channels;
+    int m_bytePerSample;
 };
 
 

@@ -17,6 +17,9 @@ class RtcClient(RtcClientInterface, RtcClientBase):
     def load(self, url: str, appkey: str, secretkey: str, log: bool) -> int:
         pass
 
+    def setAudioParams(self, sampleRate: int, channels: int, bytesPerSample: int) -> int:
+        pass
+
     def uninit(self) -> None:
         pass
 

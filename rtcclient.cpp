@@ -1,12 +1,21 @@
 #include "rtcclient.h"
 
 static rtc::VideoCodec g_videocodec = rtc::codec_h264;
-static int g_sampelRate = 16000;
-static int g_channels = 1;
-static int g_sziePerSample = 2;
+
 
 RtcClient::RtcClient()
-    : m_roomobj(0), m_audio(0), m_video(0), m_chat(0), m_isInitSuccess(false), m_isJoind(false), m_cameraCap(1280, 720, 20), m_audioSubed(false), m_createRoomForTest(false)
+    : m_roomobj(0)
+    , m_audio(0)
+    , m_video(0)
+    , m_chat(0)
+    , m_isInitSuccess(false)
+    , m_isJoind(false)
+    , m_cameraCap(1280, 720, 20)
+    , m_audioSubed(false)
+    , m_createRoomForTest(false)
+    , m_sampelRate(48000)
+    , m_channels(2)
+    , m_bytePerSample(2)
 {
     m_callid = 0;
     rtc::IAVDEngine::Instance();
@@ -92,6 +101,12 @@ int RtcClient::load(std::string url, std::string appkey, std::string secretkey, 
 //     cout << "AVDEngine end!" << endl;
 //     return result;
 // }
+int RtcClient::setAudioParams(int sampleRate, int channels, int bytesPerSample) {
+    m_sampelRate = sampleRate;
+    m_channels = channels;
+    m_bytePerSample = bytesPerSample;
+    return 0;
+}
 
 void RtcClient::uninit()
 {
@@ -428,12 +443,12 @@ int RtcClient::JoinRoomInternal()
             m_chat->setListener(this);
 
             cout << "join room ,obtain 2=" << endl;
-            m_audioDeviceIn = new AudioDeviceInDumy(g_sampelRate, g_channels);
-            m_audioDeviceOut = new AudioDeviceOutDumy(g_sampelRate, g_channels);
+            m_audioDeviceIn = new AudioDeviceInDumy(m_sampelRate, m_channels);
+            m_audioDeviceOut = new AudioDeviceOutDumy(m_sampelRate, m_channels);
             cout << "join room ,obtain 3=" << endl;
             GlobalDeviceManager::SetAudioInterface(m_audioDeviceIn, m_audioDeviceOut);
             cout << "join room ,obtain 4=" << endl;
-            m_audioPcmOut = new AudioPcmOut(g_sampelRate, g_channels);
+            m_audioPcmOut = new AudioPcmOut(m_sampelRate, m_channels);
             bool autoSubAudio = false;
             cout << "join room ,obtain 5=" << endl;
             m_roomobj->setOption(ro_audio_auto_subscribe, &autoSubAudio);
@@ -594,7 +609,7 @@ void RtcClient::onSubscribeMicrophoneResult(Result result, const UserId& fromId)
     }
     else {
         cout << "user " << fromId << " is not in map" << fromId << endl;
-        pcmout = new AudioPcmOut(g_sampelRate, g_channels);
+        pcmout = new AudioPcmOut(m_sampelRate, m_channels);
         m_audioPcmOutMap[fromId] = pcmout;
     }
 
@@ -689,6 +704,7 @@ PYBIND11_MODULE(rtc_client, m)
                 delete self; })
         .def("load", &RtcClient::load, "Loads the client with the given URL, token, and optionally enables logging.",
             py::arg("url"), py::arg("appkey"), py::arg("secretkey"),py::arg("enablelog") = false)
+        .def("setAudioParams", &RtcClient::setAudioParams)
         .def("uninit", &RtcClient::uninit)
         .def("joinRoom", &RtcClient::joinRoom)
         .def("loadAndJoinRoom", &RtcClient::loadAndJoinRoom)
