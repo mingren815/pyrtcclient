@@ -45,6 +45,9 @@ int RtcClient::load(std::string url, std::string appkey, std::string secretkey, 
 
    rtc::IAVDEngine::Instance()->setOption(eo_video_codec_priority, &g_videocodec);
    rtc::IAVDEngine::Instance()->setOption(eo_camera_capability_default, &m_cameraCap);
+   bool enableAEC = false;
+   rtc::IAVDEngine::Instance()->setOption(eo_audio_aec_Enable, &enableAEC);
+   rtc::IAVDEngine::Instance()->setOption(eo_audio_noiseSuppression_Enable, &enableAEC);
    // 初始化
    result = rtc::IAVDEngine::Instance()->init(this, url, appkey, secretkey);
 
